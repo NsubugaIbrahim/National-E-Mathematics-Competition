@@ -1,0 +1,79 @@
+@extends('layouts.app', ['class' => 'login-page', 'page' => __('Login Page'), 'contentClass' => 'login-page'])
+
+@section('content')
+<head>
+    <style> 
+     html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling */
+        }
+    .logo1 {
+            position: relative;
+            top: -70px; 
+            left: 20px;
+        }
+        .card.card-login.card-white {
+            height: 570px;
+            top: -100px;
+    }
+    .card-body{
+        position: relative;
+            top: -100px; 
+    }
+    .card-footer{
+        position: relative;
+            top: -150px; 
+    }    
+    </style>
+</head>
+    <div class="col-lg-4 col-md-6 ml-auto mr-auto">
+        <form class="form" method="post" action="{{ route('login') }}">
+            @csrf
+            <div class="card card-login card-white">
+                <div class="card-header">
+                    <img src="{{ asset('black') }}/img/card-primary.png" alt="">
+                    <h1 class="card-title">{{ __('Log in') }}</h1>
+                </div>
+                <div class="logo1"><img src="black/img/Logo5.png" alt="Logo" width="300" height="300"></div>
+                <div class="card-body">
+                    <label for="exampleInputEmail1" class="form-label">Email address</label>
+                    <div class="input-group{{ $errors->has('email') ? ' has-danger' : '' }}">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <i class="tim-icons icon-email-85"></i>
+                            </div>
+                        </div>
+                        <input type="email" name="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" placeholder="{{ __('Email') }}">
+                        @include('alerts.feedback', ['field' => 'email'])
+                    </div>
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group{{ $errors->has('password') ? ' has-danger' : '' }}">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <i class="tim-icons icon-lock-circle"></i>
+                            </div>
+                        </div>
+                        <input type="password" placeholder="{{ __('Password') }}" name="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}">
+                        @include('alerts.feedback', ['field' => 'password'])
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" href="" class="btn btn-primary btn-lg btn-block mb-3">{{ __('Get Started') }}</button>
+                    <div class="pull-left">
+                        <h6>
+                            <a href="{{ route('register') }}" class="link footer-link">{{ __('Create Account') }}</a>
+                        </h6>
+                    </div>
+                    <div class="pull-right">
+                        <h6>
+                            <a href="{{ route('password.request') }}" class="link footer-link">{{ __('Forgot password?') }}</a>
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+@endsection
