@@ -1,4 +1,4 @@
-@extends('layouts.app', ['page' => __('Icons'), 'pageSlug' => 'icons'])
+@extends('layouts.app', ['page' => __('Upload'), 'pageSlug' => 'upload'])
 
 @section('content')
 <h1>Upload Questions and Answers</h1>
