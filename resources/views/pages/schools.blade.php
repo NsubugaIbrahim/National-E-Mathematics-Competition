@@ -24,9 +24,9 @@
         </thead>
         <tbody>
             <tr>
-                <td><input type="text" name="regno"></td>
-                <td><input type="text" name="name"></td>
-                <td><input type="text" name="district"></td>
+                <td><input type="text" name="regno" required></td>
+                <td><input type="text" name="name" required></td>
+                <td><input type="text" name="district" required></td>
             </tr>
         </tbody>
     </table>
@@ -44,9 +44,9 @@
             const tableBody = document.querySelector('tbody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td><input type="text" name="regno"></td>
-                <td><input type="text" name="name"></td>
-                <td><input type="text" name="district"></td>
+                <td><input type="text" name="regno" required></td>
+                <td><input type="text" name="name" required></td>
+                <td><input type="text" name="district" required></td>
             `;
             tableBody.appendChild(newRow);
         });

@@ -17,7 +17,6 @@
     <table>
         <thead>
             <tr>
-                <th>Representative ID</th>
                 <th>Representative name</th>
                 <th>Representative email</th>
                 <th>School registration number</th>
@@ -25,10 +24,9 @@
         </thead>
         <tbody>
             <tr>
-                <td><input type="text" name="repid"></td>
-                <td><input type="text" name="name"></td>
-                <td><input type="text" name="email"></td>
-                <td><input type="text" name="regno"></td>
+                <td><input type="text" name="name" required></td>
+                <td><input type="email" name="email" required></td>
+                <td><input type="text" name="regno" required></td>
             </tr>
         </tbody>
     </table>
@@ -43,10 +41,9 @@
             const tableBody = document.querySelector('tbody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td><input type="text" name="repid"></td>
-                <td><input type="text" name="name"></td>
-                <td><input type="text" name="email"></td>
-                <td><input type="text" name="regno"></td>
+                <td><input type="text" name="name" required></td>
+                <td><input type="email" name="email" required></td>
+                <td><input type="text" name="regno" required></td>
             `;
             tableBody.appendChild(newRow);
         });

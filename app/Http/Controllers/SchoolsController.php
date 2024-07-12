@@ -16,16 +16,16 @@ class SchoolsController extends Controller
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Collect form data
             $schoolRegNo = $_POST['regno'];
-            $name = $_POST['name'];
+            $schoolName = $_POST['name'];
             $district = $_POST['district']; 
         
             // Database connection
             $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
         
             // SQL query
-            $sql = "INSERT INTO schools(schoolRegNo, name, district) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO schools(schoolRegNo, schoolName, district) VALUES (?, ?, ?)";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute(array($schoolRegNo, $name, $district));
+            $stmt->execute(array($schoolRegNo, $schoolName, $district));
            
              // Redirect to the success_page route
              return redirect()->away('http://localhost:8000/success_schools_submit.php');   

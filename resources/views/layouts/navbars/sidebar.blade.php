@@ -76,7 +76,7 @@
             <li @if ($pageSlug == 'challenges') class="active " @endif>
                 <a href="{{ route('pages.challenges') }}">
                     <i class="tim-icons icon-components"></i>
-                    <h4>{{ __('View Challenges') }}</h4>
+                    <h4>{{ __('Generate Challenges') }}</h4>
                 </a>
             </li>
             <li @if ($pageSlug == 'rtl') class="active " @endif>

@@ -10,57 +10,41 @@
             text-align: center; /* Center horizontally */
             vertical-align: middle; /* Center vertically */
         }
-        .right{
+        .container{
+            width: 50%;
             float: right;
         }
-        .card-title, .right {
-            display: inline;
-            
-        }
+
     </style>
 </head>
 <body>
     <div class="content">  
-        <h1 class="card-title">Challenges <h4>Insert new Challenges into the table and upload to update the Database</h4> </h1> 
+        <h1 class="card-title">Set Challenge parameters to create a challenge</h1> 
         
-        <div class="right">
-        <div class="alert alert-primary">
-          <button type="button" aria-hidden="true" class="close" data-dismiss="alert" aria-label="Close">
-            <i class="tim-icons icon-simple-remove"></i>
-          </button>
-          <span>
-            <b> Info - </b> Insert both dates to define the Challenge Availability</span>
+        <div class="container">
+            <div class="alert alert-info alert-with-icon" data-notify="container">
+                <button type="button" aria-hidden="true" class="close" data-dismiss="alert" aria-label="Close">
+                    <i class="tim-icons icon-simple-remove"></i>
+                </button>
+                <span data-notify="message"> After setting parameters and creating a challenge, the challenge will be uploaded to the database together with it's accompanying properties </span>
+            </div>
         </div>
-    </div>
-    <button id="addRow"><i class="tim-icons icon-simple-add"></i>        Add New Challenge</button>
-    <!-- <p class="card-category">Add School Representatives to validate</p> -->
+               
+        <form method="post" action="/submit-challenge">
+        @csrf
+        <table class="table table-striped table-hover table-borderless table-lg col-6">
+            <tr><th><h4>Number of questions:</h4></th> <td><h4><input type="text" name="no.questions" required></h4></td><tr>
+            <tr><th><h4>Duration:</h4></th> <td><h4><input type="time" name="duration" required></h4></td><tr>
+            <tr><th><h4>Start date:</h4></th> <td><h4><input type="date" name="start" id="start-date" required></h4></td><tr>
+            <tr><th><h4>End date:</h4></th> <td><h4><input type="date" name="end" id="end-date" required></h4></td><tr>
+            <!-- <tr><th></th> <td></td><tr> -->
+        </table>
+                @if (session('status'))
+                    <div class="alert alert-success">{{session('status')}}</div>
+                @endif
     
-    <form method="post" action="/submit-challenge">
-    @csrf
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Number of questions</th>
-                <th>Duration</th>
-                <th>Start date</th>
-                <th>End date</th>
-                <th>Availability</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="text" name="no.questions"></td>
-                <td><input type="time" name="duration"></td>
-                <td><input type="date" name="start" id="start-date"></td>
-                <td><input type="date" name="end" id="end-date"></td>
-                <td class="availability" id="availability-symbol"></td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <br><br>
-    <button type= "submit" id=""><i class="tim-icons icon-cloud-upload-94"></i>    Upload all Challenges</button>
-    </form>
+        <button class="btn btn-secondary" type= "submit" id=""><i class="tim-icons icon-cloud-upload-94"></i>    Create Challenge</button>
+        </form>
     <br><br>
     <a href="{{ route('challenges') }}" class="btn btn-primary"> <i class="tim-icons icon-components"></i>   View Uploaded Challenges</a>
 
@@ -94,11 +78,11 @@
 
     // Create and append new cells to the row
     newRow.innerHTML = `
-        <td><input type="text" name="no.questions"></td>
-        <td><input type="time" name="duration"></td>
-        <td><input type="date" name="start" id="start-date"></td>
-        <td><input type="date" name="end" id="end-date"></td>
-        <td class="availability" id="availability-symbol"></td>
+        <td><input type="text" name="no.questions" required></td>
+        <td><input type="time" name="duration" required></td>
+        <td><input type="date" name="start" id="start-date" required></td>
+        <td><input type="date" name="end" id="end-date" required></td>        
+        <td class="availability" id="availability-symbol"></td>                        
     `;
 
     tableBody.appendChild(newRow);
