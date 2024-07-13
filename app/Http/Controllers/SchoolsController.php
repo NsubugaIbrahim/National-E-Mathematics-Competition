@@ -14,21 +14,22 @@ class SchoolsController extends Controller
     
     public function store(Request $request) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Collect form data
-            $schoolRegNo = $_POST['regno'];
-            $schoolName = $_POST['name'];
-            $district = $_POST['district']; 
-        
-            // Database connection
+          // Access form data as arrays
+            $schoolRegNo = $request->input('regno');
+            $schoolName = $request->input('name');
+            $district = $request->input('district');
+      
+          // Loop through each row's data and insert into database
+          for ($i = 0; $i < count($schoolRegNo); $i++) {
             $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
-        
-            // SQL query
             $sql = "INSERT INTO schools(schoolRegNo, schoolName, district) VALUES (?, ?, ?)";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute(array($schoolRegNo, $schoolName, $district));
-           
-             // Redirect to the success_page route
-             return redirect()->away('http://localhost:8000/success_schools_submit.php');   
+            $stmt->execute(array($schoolRegNo[$i], $schoolName[$i], $district[$i]));
+          }
+      
+          // Redirect to the success page
+          return redirect()->back()->with('status', 'School(s) successfully registered');
         }
-    }
+      }
+      
 }
