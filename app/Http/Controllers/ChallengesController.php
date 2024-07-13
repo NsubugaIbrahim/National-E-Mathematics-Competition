@@ -24,12 +24,13 @@ class ChallengesController extends Controller
             $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
         
             // SQL query
-            $sql = "INSERT INTO challenges(challengeId, challengeName, numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO challenges(numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute(array($challengeId, $challengeName, $numberOfQuestions, $duration, $startDate, $endDate));
+            $stmt->execute(array($numberOfQuestions, $duration, $startDate, $endDate));
            
             // Redirect to the success_page route
-            return redirect()->away('http://localhost:8000/success_page.php');
+            // return redirect()->away('http://localhost:8000/success_page.php');
+            return redirect()->back()->with('status', 'Challenge has been successfully created and uploaded to the database');
         }
     }
 }

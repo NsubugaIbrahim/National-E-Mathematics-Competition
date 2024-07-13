@@ -11,7 +11,7 @@ class PageController extends Controller
      */
     public function icons()
     {
-        return view('pages.icons');
+        return view('pages.upload');
     }
 
     /**
@@ -21,7 +21,7 @@ class PageController extends Controller
      */
     public function maps()
     {
-        return view('pages.maps');
+        return view('pages.schools');
     }
 
     /**
@@ -31,7 +31,7 @@ class PageController extends Controller
      */
     public function tables()
     {
-        return view('pages.tables');
+        return view('pages.challenges');
     }
 
     /**
@@ -61,7 +61,7 @@ class PageController extends Controller
      */
     public function typography()
     {
-        return view('pages.typography');
+        return view('pages.reps');
     }
 
     /**

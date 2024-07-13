@@ -49,14 +49,14 @@
                     </ul>
                 </div>
             </li>
-            <li @if ($pageSlug == 'typography') class="active " @endif>
-                <a href="{{ route('pages.typography') }}">
+            <li @if ($pageSlug == 'reps') class="active " @endif>
+                <a href="{{ route('pages.reps') }}">
                 <i class="tim-icons icon-paper"></i>
                     <h4>{{ __('Validate Representatives') }}</h4>
                 </a>
             </li>
-            <li @if ($pageSlug == 'maps') class="active " @endif>
-                <a href="{{ route('pages.maps') }}">
+            <li @if ($pageSlug == 'schools') class="active " @endif>
+                <a href="{{ route('pages.schools') }}">
                     <i class="tim-icons icon-notes"></i>
                     <h4>{{ __('Register Schools') }}</h4>
                 </a>
@@ -67,16 +67,16 @@
                     <h4>{{ __('notifications') }}</h4>
                 </a>
             </li>
-            <li @if ($pageSlug == 'icons') class="active " @endif>
-                <a href="{{ route('pages.icons') }}">
+            <li @if ($pageSlug == 'upload') class="active " @endif>
+                <a href="{{ route('pages.upload') }}">
                 <i class="tim-icons icon-upload"></i>
                     <h4>{{ __('Upload Questions') }}</h4>
                 </a>
             </li>
-            <li @if ($pageSlug == 'tables') class="active " @endif>
-                <a href="{{ route('pages.tables') }}">
+            <li @if ($pageSlug == 'challenges') class="active " @endif>
+                <a href="{{ route('pages.challenges') }}">
                     <i class="tim-icons icon-components"></i>
-                    <h4>{{ __('View Challenges') }}</h4>
+                    <h4>{{ __('Generate Challenges') }}</h4>
                 </a>
             </li>
             <li @if ($pageSlug == 'rtl') class="active " @endif>

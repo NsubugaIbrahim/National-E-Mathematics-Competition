@@ -10,19 +10,19 @@
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>Registration number</th>
+                    <th>School ID</th>    
+                    <th>School Registration number</th>
                     <th>School name</th>
                     <th>District</th>
-                    <th>Representative Id</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($schools as $c)
                 <tr>
+                    <td> <a href="">{{$c->schoolId}}</a></td>
                     <td>{{$c->schoolRegNo}}</td>
-                    <td>{{$c->name}}</td>
+                    <td>{{$c->schoolName}}</td>
                     <td>{{$c->district}}</td>
-                    <td>{{$c->representativeId}}</td>
                 </tr>
                 @endforeach
             </tbody>       

@@ -11,7 +11,6 @@
             <thead>
                 <tr>
                     <th>Challenge ID</th>
-                    <th>Challenge name</th>
                     <th>Number of questions</th>
                     <th>Duration</th>
                     <th>Start date</th>
@@ -23,7 +22,6 @@
                 @foreach($challenges as $c)
                 <tr>
                     <td><a href="#">{{$c->challengeId}}</a></td>
-                    <td>{{$c->challengeName}}</td>
                     <td>{{$c->numberOfQuestions}}</td>
                     <td>{{$c->duration}}</td>
                     <td>{{$c->startDate}}</td>
