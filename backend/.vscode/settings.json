@@ -1,0 +1,12 @@
+{
+    "java.project.sourcePaths": [
+        "src",
+        "lib"
+    ],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "c:\\xampp\\htdocs\\National-E-Mathematics-Competition\\backend\\lib\\activation-1.1.1.jar",
+        "c:\\xampp\\htdocs\\National-E-Mathematics-Competition\\backend\\lib\\mysql-connector-j-9.0.0.jar",
+        "c:\\xampp\\htdocs\\National-E-Mathematics-Competition\\backend\\lib\\javax.mail.jar"
+    ]
+}
