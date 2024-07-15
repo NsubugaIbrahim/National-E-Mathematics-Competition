@@ -65,7 +65,7 @@ public class e {
     }
 
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no");
+        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image");
 
         String registrationDetails = in.readLine();
         System.out.println("Registration details received: " + registrationDetails);
