@@ -17,7 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 
-public class server {
+public class g {
     private static final String REGISTER = "Register";
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";

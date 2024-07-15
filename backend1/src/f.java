@@ -11,36 +11,30 @@ import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.Base64;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
-
-public class server {
+public class f {
     private static final String REGISTER = "Register";
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
     private static final String FILE_PATH = "registration_details.json"; // JSON file path
-    private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(6666)) {
             System.out.println("\n\nWelcome to the Competition!\n\n\n");
-    
+
             while (true) {
                 try (Socket socket = serverSocket.accept();
                      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-    
+
                     System.out.println("Client connected...");
                     displayMenu(out);
-    
+
                     // Read client choice
                     String clientChoice = in.readLine();
                     System.out.println("Client selected option: " + clientChoice);
-    
+
                     switch (clientChoice) {
                         case REGISTER:
                             handleRegistration(in, out);
@@ -54,13 +48,9 @@ public class server {
                         case VIEW_APPLICANTS:
                             handleViewApplicants(out);
                             break;
-                        case CONFIRM_APPLICANT:
-                            handleConfirmApplicant(new BufferedReader(new InputStreamReader(System.in)), out); // Use System.in for user input
-                            break;
                         default:
                             out.println("Invalid option selected.");
                     }
-    
                     // Display menu again after processing choice
                     displayMenu(out);
                 } catch (IOException e) {
@@ -71,7 +61,6 @@ public class server {
             System.err.println("Server error: " + e.getMessage());
         }
     }
-    
 
     private static void displayMenu(PrintWriter out) {
         out.println("Welcome to the Competition!");
@@ -79,11 +68,9 @@ public class server {
         out.println(REGISTER + ". Register");
         out.println(VIEW_CHALLENGES + ". ViewChallenges");
         out.println(ATTEMPT_CHALLENGE + ". AttemptChallenge");
-        out.println(VIEW_APPLICANTS + ". ViewApplicants");
-        out.println(CONFIRM_APPLICANT + ". ConfirmApplicant"); // New menu option
+        out.println(VIEW_APPLICANTS + ". ViewApplicants"); // New menu option
         out.println("\nPlease enter your choice:");
     }
-    
 
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
         out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
@@ -228,7 +215,7 @@ public class server {
             emailContent += "Date of Birth: " + dob + "\n";
             emailContent += "Please keep this email for future reference.\n\n";
             emailContent += "You will be receiving an email once your registration is approved.\n\n";
-            emailContent += "Thank you for registering with for the natinal E mathemactics Competition.";
+            emailContent += "Thank you for registering with us.";
 
             message.setText(emailContent);
 
@@ -257,123 +244,4 @@ public class server {
         }
         return base64Image;
     }
-
-    private static void handleConfirmApplicant(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please confirm applicant by typing: confirm yes [username]");
-        out.flush(); // Ensure prompt is displayed immediately
-    
-        String confirmationRequest = in.readLine(); // Wait for user input
-    
-        // Parse the command
-        String[] commandParts = confirmationRequest.split(" ");
-        if (commandParts.length == 3 && commandParts[0].equals("confirm") && commandParts[1].equals("yes")) {
-            String usernameToConfirm = commandParts[2];
-    
-            // Read from registration_details.json and find the applicant
-            JSONArray applicants = readApplicantsFromFile();
-            JSONArray updatedApplicants = new JSONArray();
-    
-            boolean found = false;
-            for (int i = 0; i < applicants.length(); i++) {
-                JSONObject applicant = applicants.getJSONObject(i);
-                String username = applicant.getString("username");
-    
-                if (username.equals(usernameToConfirm)) {
-                    // Save applicant details to database
-                    saveToDatabase(applicant);
-    
-                    // Notify confirmation
-                    out.println("Applicant " + usernameToConfirm + " confirmed and details saved to database.");
-                    out.flush(); // Ensure message is displayed immediately
-    
-                    // Remove from JSON file
-                    found = true;
-                } else {
-                    updatedApplicants.put(applicant);
-                }
-            }
-    
-            if (!found) {
-                out.println("Applicant not found.");
-                out.flush(); // Ensure message is displayed immediately
-            } else {
-                // Write updated applicants back to file
-                writeApplicantsToFile(updatedApplicants);
-            }
-        } else {
-            out.println("Invalid confirmation command. Please use format: confirm yes [username]");
-            out.flush(); // Ensure message is displayed immediately
-        }
-    }
-    
-    
-    
-    
-    private static JSONArray readApplicantsFromFile() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
-            StringBuilder jsonString = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonString.append(line);
-                jsonString.append("\n");
-            }
-            return new JSONArray(jsonString.toString());
-        }
-    }
-    
-    private static void writeApplicantsToFile(JSONArray applicants) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            writer.write(applicants.toString());
-            writer.newLine();
-        }
-    }
-    
-    private static void saveToDatabase(JSONObject applicant) {
-        String url = "jdbc:mysql://localhost:3306/mathchallenge"; // Replace with your database URL
-        String username = "root"; // Replace with your database username
-        String password = ""; // Replace with your database password
-    
-        Connection conn = null;
-        PreparedStatement stmt = null;
-    
-        try {
-            // Connect to the database
-            conn = DriverManager.getConnection(url, username, password);
-    
-            // SQL query to insert applicant details into 'participants' table
-            String sql = "INSERT INTO participants (username, firstname, lastname, email, password, date_of_birth, school_reg_no, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
-            // Prepare the statement with the SQL query
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, applicant.getString("username"));
-            stmt.setString(2, applicant.getString("firstname"));
-            stmt.setString(3, applicant.getString("lastname"));
-            stmt.setString(4, applicant.getString("email"));
-            stmt.setString(5, applicant.getString("password"));
-            stmt.setString(6, applicant.getString("date_of_birth"));
-            stmt.setString(7, applicant.getString("school_reg_no"));
-            stmt.setString(8, applicant.getString("image"));
-    
-            // Execute the insert statement
-            int rowsInserted = stmt.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("A new participant was inserted successfully!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            // Close resources in a finally block to ensure they're always closed
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
 }

@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
+import java.util.Base64;
 
 public class e {
     private static final String REGISTER = "Register";
@@ -65,7 +66,7 @@ public class e {
     }
 
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image");
+        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
 
         String registrationDetails = in.readLine();
         System.out.println("Registration details received: " + registrationDetails);
@@ -190,15 +191,18 @@ public class e {
     private static String encodeImageToBase64(String imagePath) {
         String base64Image = "";
         try {
+            System.out.println("Reading image from path: " + imagePath);
             File file = new File(imagePath);
             BufferedImage image = ImageIO.read(file);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "jpg", baos);
+            ImageIO.write(image, "png", baos);
             byte[] imageBytes = baos.toByteArray();
-            base64Image = java.util.Base64.getEncoder().encodeToString(imageBytes);
+            base64Image = Base64.getEncoder().encodeToString(imageBytes);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return base64Image;
     }
+    
 }
+
