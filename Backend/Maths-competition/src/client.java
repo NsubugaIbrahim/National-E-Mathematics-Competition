@@ -56,7 +56,7 @@ public class client {
 
         try {
             Object response = objIn.readObject();
-            if (response instanceof List<?>) { // I'm using List<?> to avoid raw type since it brought an error
+            if (response instanceof List<?>) { // I'm using List<?> to avoid raw type
                 @SuppressWarnings("unchecked")
                 List<Challenge> challenges = (List<Challenge>) response;
                 if (challenges.isEmpty()) {
