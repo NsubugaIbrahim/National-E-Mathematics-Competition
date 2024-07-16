@@ -30,7 +30,7 @@ public class pdf {
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
-    private static final String FILE_PATH = "registration_details.pdf"; // PDF file path
+    private static final String FILE_PATH = "registrationdetails.pdf"; // PDF file path
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
 
     public static void main(String[] args) {
@@ -154,7 +154,7 @@ public class pdf {
             // Add image to PDF
             contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
             PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
-            contentStream.drawImage(pdImage, 100, 400, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
+            contentStream.drawImage(pdImage, 25, 100, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
             contentStream.close();
 
             // Save PDF
