@@ -103,14 +103,14 @@ public class y {
         try {
             // Parse registration details
             String[] details = registrationDetails.split(" ");
-            String username = details[0];
-            String firstname = details[1];
-            String lastname = details[2];
-            String email = details[3];
-            String password = details[4];
-            String dob = details[5];
-            String schoolRegNo = details[6];
-            String imagePath = details[7];
+            String username = details[1];
+            String firstname = details[2];
+            String lastname = details[3];
+            String email = details[4];
+            String password = details[5];
+            String dob = details[6];
+            String schoolRegNo = details[7];
+            String imagePath = details[8];
 
             // Create PDF document
             //PDDocument document = PDDocument.load(new File(FILE_PATH));
