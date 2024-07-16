@@ -62,6 +62,14 @@ public class Server1 {
             imageInput.close();
             fop.close();       
         }//Registration loop.
+        else if(userOption.equals("Validation Status")){
+            PR.println("Please enter your user name");
+            PR.flush();
+            String userName=K.readLine();
+            System.out.println(userName);
+            PR.println("Checking files. Please wait...");
+            PR.flush();
+        }//Validation loop ends here.
        /*  FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin"); This kind of format overights the existing information in the file.
 
         byte[] buffer = new byte[1024];

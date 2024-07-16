@@ -131,6 +131,18 @@ if (userOption.equals("Register")){
         System.out.println("Registration process complete....");
         System.out.println("Wait for validation by your school representative");
 }//Register Loop ends here.
+else if(userOption.equals("Validation Status")){
+    // System.out.println("Please enter your user name");
+    String jj=K.readLine();
+    System.out.println(jj);
+     String userName=userInput.readLine();
+     System.out.println(userName);
+     PR.println(userName);
+       PR.flush();
+     String KK=K.readLine();
+     System.out.println(KK);
+    // System.out.println("Please wait a moment.......");
+ }// Validation loop ends here.
     }
 }//Main method ends here.
   // Method to validate if the email is in Gmail format
