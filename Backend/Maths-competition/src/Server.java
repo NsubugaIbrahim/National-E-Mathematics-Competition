@@ -8,37 +8,27 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.TimeUnit;
 
-public class server {
+public class Server {
     private static final int PORT = 4999;
-    private final Map<String, Participant> participants = new HashMap<>();
-//    private final List<String> questions = new ArrayList<>();
-//    private static final long TOTAL_CHALLENGE_TIME_MS = TimeUnit.MINUTES.toMillis(5); // 5 minutes
+    private final Map<String, Participant> participants = new ConcurrentHashMap<>();
+    private final List<String> questions = new ArrayList<>();
+    private static final long TOTAL_CHALLENGE_TIME_MS = TimeUnit.MINUTES.toMillis(5); // 5 minutes
     private static final int MAX_ATTEMPTS = 3;
     private Connection connection;
-    private ObjectOutputStream out = null;
+    //private ObjectOutputStream out = null;
 
-    public server() {
-        // Initialize dummy questions
-       /* questions.add("What is the capital of France?");
-        questions.add("What is 2 + 2?");
-        questions.add("Who wrote 'To Kill a Mockingbird'?");*/
-
-        // Set up database connection
+    public Server() {
         try {
-            // Load the MySQL JDBC driver
             Class.forName("com.mysql.cj.jdbc.Driver");
-            // Replace "your_database", "username", and "password" with your actual database name, username, and password
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/maths", "root", "");
             System.out.println("Connected to the database successfully...");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }
-
     public boolean registerParticipant(Participant participant) {
         if (participants.containsKey(participant.getUsername())) {
             return false;
@@ -61,43 +51,21 @@ public class server {
             pstmt.setString(8, participant.getImageFile());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error saving participant to database: " + e.getMessage());
         }
     }
 
-    public void startChallenge(Participant participant, PrintWriter out) {
+    public void startChallenge(Participant participant, PrintWriter out, BufferedReader in) throws IOException {
+        if (participant == null) {
+            out.println("Participant not found, please register first.");
+            return;
+        }
+
         if (participant.getAttempts() >= MAX_ATTEMPTS) {
             out.println("You have reached the maximum number of attempts for this challenge.");
             return;
         }
 
-        /*participant.incrementAttempts();
-        Collections.shuffle(questions);
-
-        long startTime = System.currentTimeMillis();
-        int remainingQuestions = questions.size();
-
-        for (String question : questions) {
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            long remainingTime = TOTAL_CHALLENGE_TIME_MS - elapsedTime;
-
-            if (remainingTime <= 0) {
-                out.println("Time is up!");
-                break;
-            }
-
-            // Display time left and remaining questions
-            out.println("Time left: " + formatTime(remainingTime) + " | Questions left: " + remainingQuestions);
-            out.println(question);
-
-            try {
-                Thread.sleep(1000); // Simulate time taken to answer
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            remainingQuestions--;
-        }*/
         participant.incrementAttempts();
 
         List<Question> questions = getQuestionsFromDatabase();
@@ -108,7 +76,7 @@ public class server {
 
         for (Question question : questions) {
             long elapsedTime = System.currentTimeMillis() - startTime;
-            long remainingTime = TimeUnit.MINUTES.toMillis(5) - elapsedTime;
+            long remainingTime = TOTAL_CHALLENGE_TIME_MS - elapsedTime;
 
             if (remainingTime <= 0) {
                 out.println("Time is up!");
@@ -119,8 +87,18 @@ public class server {
             out.println("Time left: " + formatTime(remainingTime) + " | Questions left: " + remainingQuestions);
             out.println(question.getQuestionText());
 
+            String answer = in.readLine();
+            //if (answer == null) break;
+
+            // Validate the answer
+            if (validateAnswer(question.getQuestionId(), answer)) {
+                out.println("Correct!");
+            } else {
+                out.println("Incorrect!");
+            }
+
             try {
-                Thread.sleep(1000); // Simulate time taken to answer
+                Thread.sleep(2000); // Time taken to answer
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -128,6 +106,9 @@ public class server {
             remainingQuestions--;
         }
         out.println("Challenge completed!");
+    }
+    public Participant getParticipant(String username) {
+        return participants.get(username);
     }
 
     private List<Question> getQuestionsFromDatabase() {
@@ -143,9 +124,24 @@ public class server {
                 questions.add(question);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error retrieving questions from database: " + e.getMessage());
         }
         return questions;
+    }
+
+    private boolean validateAnswer(String questionId, String answer) {
+        String sql = "SELECT answer FROM answers WHERE questionId = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, questionId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String correctAnswer = rs.getString("correctAnswer");
+                return correctAnswer.equalsIgnoreCase(answer);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error validating answer: " + e.getMessage());
+        }
+        return false;
     }
 
     private String formatTime(long milliseconds) {
@@ -154,16 +150,35 @@ public class server {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
-    public Participant getParticipant(String username) {
-        return participants.get(username);
+    public Participant getParticipantFromDatabase(String username) {
+        String sql = "SELECT * FROM participant WHERE username = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Participant(
+                        rs.getString("participantId"),
+                        rs.getString("username"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("dateOfBirth"),
+                        rs.getString("schoolRegNo"),
+                        rs.getString("imageFile")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving participant from database: " + e.getMessage());
+        }
+        return null;
     }
 
-    public void viewChallenges(ObjectOutputStream out, String participantId) {
+    public void viewChallenges(ObjectOutputStream out, String username) {
         try {
-            // Get the participant's username from the database
-            String username = getUsernameFromDatabase(participantId);
+            String Username = getUsernameFromDatabase(username);
 
-            if (username == null) {
+            if (Username == null) {
                 out.writeObject("Participant not found, please register first.");
                 out.flush();
                 return;
@@ -189,30 +204,27 @@ public class server {
             e.printStackTrace();
         }
     }
-
-    private String getUsernameFromDatabase(String participantId) {
+    private String getUsernameFromDatabase(String username) {
         // Replace this query with your actual query to retrieve the username
         String query = "SELECT username FROM participant WHERE participantId = ?";
-        String username = null;
+        String Username = null;
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            // Assuming you have the participantId stored somewhere or passed to this method
-            pstmt.setString(001, participantId); // Replace participantId with the actual participantId
+            pstmt.setString(1, username);
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                username = rs.getString("username");
+                Username = rs.getString("username");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error retrieving username from database: " + e.getMessage());
         }
-
-        return username;
+        return Username;
     }
 
 
     public static void main(String[] args) {
-        server server = new server();
+        Server server = new Server();
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server started...");
             while (true) {
@@ -225,10 +237,10 @@ public class server {
 
     private static class ClientHandler extends Thread {
         private final Socket socket;
-        private final server server;
+        private final Server server;
         private ObjectOutputStream objOut;
 
-        public ClientHandler(Socket socket, server server) {
+        public ClientHandler(Socket socket, Server server) {
             this.socket = socket;
             this.server = server;
         }
@@ -258,27 +270,25 @@ public class server {
                             }
                             break;
                         case "START":
-                            if (tokens.length == 3) {
-                                String challengeId = tokens[1];
-                                String username = tokens[2];
-                                Participant participant = server.getParticipant(username);
-
-                                if (participant != null) {
-                                    // Check if challengeId exists and handle challenge start
-                                    server.startChallenge(participant, out);
+                            if (tokens.length == 2) {
+                                String username = tokens[1];
+                                Participant participant = server.getParticipantFromDatabase(username);
+                                if (username != null) {
+                                    out.println("You can start the challenge. ");
+                                    server.startChallenge(participant,out,in);
                                 } else {
                                     out.println("Participant not found, please register first.");
                                 }
-                            } else {
-                                out.println("Invalid input format. Please enter challenge ID and username.");
+                            }else{
+                                out.println("Invalid input format. Please enter username.");
                             }
                             break;
                         case "VIEWCHALLENGES":
                             if (tokens.length == 2) {
-                                String participantId = tokens[1]; // Assuming participantId is passed as the second token
-                                server.viewChallenges(objOut, participantId);
+                                String username = tokens[1]; // Since username is passed as the first token
+                                server.viewChallenges(objOut, username);
                             } else {
-                                out.println("Invalid input format. Please enter participantId.");
+                                out.println("Invalid input format. Please enter username.");
                             }
                             break;
                         default:

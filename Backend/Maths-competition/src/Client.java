@@ -1,11 +1,9 @@
-//package backend;
-
 import java.io.*;
 import java.net.*;
 import java.util.List;
 import java.util.Scanner;
 
-public class client {
+public class Client {
     private static final String HOST = "localhost";
     private static final int PORT = 4999;
     private final Socket socket;
@@ -14,7 +12,7 @@ public class client {
     private final ObjectInputStream objIn;
     private final Scanner scanner;
 
-    public client() throws IOException {
+    public Client() throws IOException {
         this.socket = new Socket(HOST, PORT);
         this.out = new PrintWriter(socket.getOutputStream(), true);
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -24,9 +22,11 @@ public class client {
 
     public void registerParticipants() {
         while (true) {
-            System.out.println("Enter participant details in the following format:");
-            System.out.println("participantId username firstname lastname emailAddress dateOfBirth schoolRegistrationNumber imageFile");
-            System.out.println("(or type 'exit' to finish)");
+            System.out.println("---------------------------------------------------------------------------------------------------------");
+            System.out.println("| Enter participant details in the following format:                                                     |");
+            System.out.println("| participantId username firstname lastname emailAddress dateOfBirth schoolRegistrationNumber imageFile  |");
+            System.out.println("| (or type 'exit' to finish)                                                                             |");
+            System.out.println("----------------------------------------------------------------------------------------------------------");
 
             String inputLine = scanner.nextLine();
             if (inputLine.equalsIgnoreCase("exit")) break;
@@ -47,13 +47,11 @@ public class client {
             }
         }
     }
-
     public void viewChallenges() {
         System.out.println("Enter your username to view available challenges:");
         String username = scanner.nextLine();
         String message = "VIEWCHALLENGES " + username;
         out.println(message);
-
         try {
             Object response = objIn.readObject();
             if (response instanceof List<?>) { // I'm using List<?> to avoid raw type cause it brought an error
@@ -63,6 +61,7 @@ public class client {
                     System.out.println("No active challenges available.");
                 } else {
                     for (Challenge challenge : challenges) {
+                        System.out.println("-----------------------------");
                         System.out.println("Challenge ID: " + challenge.getChallengeId());
                         System.out.println("Duration: " + challenge.getDuration() + " minutes");
                         System.out.println("Start Date: " + challenge.getStartDate());
@@ -83,8 +82,6 @@ public class client {
     }
 
     public void attemptChallenge() {
-        System.out.println("Enter the challenge ID:");
-        String challengeId = scanner.nextLine();
         System.out.println("Enter your username to start the challenge:");
         String username = scanner.nextLine();
         String message = "START " + username;
@@ -97,6 +94,10 @@ public class client {
                 if (response.equals("Challenge completed!") || response.equals("Time is up!") || response.equals("Participant not found, please register first.")) {
                     break;
                 }
+                if (response.startsWith("Time left:")) {
+                    String answer = scanner.nextLine();
+                    out.println(answer);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,15 +106,17 @@ public class client {
 
     public static void main(String[] args) {
         try {
-            client client = new client();
+            Client client = new Client();
             Scanner scan = new Scanner(System.in);
 
             while (true) {
-                System.out.println("> Choose an option:");
-                System.out.println("> Register to register participant details");
-                System.out.println("> ViewChallenges to start the challenge");
-                System.out.println("> AttemptChallenge to start the challenge");
-                System.out.println("> Exit to exit");
+                System.out.println("----------------------------------------------");
+                System.out.println("|> Choose an option:                          |");
+                System.out.println("|> Register to register participant details   |");
+                System.out.println("|> ViewChallenges to start the challenge      |");
+                System.out.println("|> AttemptChallenge to start the challenge    |");
+                System.out.println("|> Exit to exit                               |");
+                System.out.println("----------------------------------------------");
                 String choice = scan.nextLine();
 
                 switch (choice) {
