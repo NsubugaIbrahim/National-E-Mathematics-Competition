@@ -4,28 +4,34 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateAnswersTable extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('answers', function (Blueprint $table) {
-            $table->string('answerId', 10);
-            $table->string('questionId', 10)->unique();
+            $table->id('answerId');
+            $table->unsignedBigInteger('questionId');
             $table->text('answer');
             $table->integer('marks');
-            $table->primary('answerId'); 
-            $table->timestamps();
+            
+
+            $table->foreign('questionId')->references('questionId')->on('questions')->onDelete('cascade');
         });
     }
 
     /**
      * Reverse the migrations.
+     *
+     * @return void
      */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('answers');
     }
-};
+}
+
