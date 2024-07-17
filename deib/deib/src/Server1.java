@@ -78,6 +78,10 @@ public class Server1 {
             PR.println(ValidationStatus);
             PR.flush();
         }//Validation loop ends here.
+        else if(userOption.equals("Exit")){
+            PR.println("Thank you for contacting us...");
+            PR.flush();
+        }//Exit loop ends here
        /*  FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin"); This kind of format overights the existing information in the file.
 
         byte[] buffer = new byte[1024];
