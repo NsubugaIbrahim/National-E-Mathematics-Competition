@@ -21,7 +21,7 @@ class ChallengesController extends Controller
             $endDate = $_POST['end'];
             
             // Database connection
-            $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
+            $pdo = new PDO('mysql:host=localhost;dbname=julian', 'root', '');
         
             // SQL query
             $sql = "INSERT INTO challenges(numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?)";

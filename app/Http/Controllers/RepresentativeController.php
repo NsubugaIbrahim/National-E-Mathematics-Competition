@@ -21,7 +21,7 @@ class RepresentativeController extends Controller
       
             // Loop through each row's data and insert into database
             for ($i = 0; $i < count($representativeName); $i++) {
-              $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
+              $pdo = new PDO('mysql:host=localhost;dbname=julian', 'root', '');
               $sql = "INSERT INTO representatives(representativeName, representativeEmail, schoolRegNo) VALUES (?, ?, ?)";
               $stmt = $pdo->prepare($sql);
               $stmt->execute(array($representativeName[$i], $representativeEmail[$i], $schoolRegNo[$i]));

@@ -141,6 +141,8 @@ else if(userOption.equals("Validation Status")){
        PR.flush();
      String KK=K.readLine();
      System.out.println(KK);
+     PR.println("Waiting for response...");
+     PR.flush();
     // System.out.println("Please wait a moment.......");
  }// Validation loop ends here.
     }
