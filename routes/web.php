@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChallengesController;
 use App\Http\Controllers\ChallengesviewController;
+use App\Models\Challenge;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -53,6 +55,17 @@ Route::get('/success_page', function () {
 //Route for viewing challenges
 Route::get('/admin/challenges', [App\Http\Controllers\ChallengesviewController::class, 'viewchallenges'])->name('challenges');
 
+//Challenges template page
+Route::get('/challenges/{challengeId}', function ($challengeId) {
+	$challenge = Challenge::where('challengeId', $challengeId)->first();
+  
+	if (!$challenge) {
+	  return abort(404); // Handle non-existent challenge
+	}
+  
+	return view('challenge-details', compact('challenge')); // Render challenge-details.blade.php with data
+  })->name('challenge.details');
+
 //Route for submitting Schools table's details
 Route::post('/submit-schools', [App\Http\Controllers\SchoolsController::class, 'store'])->name('submitschools');
 
@@ -80,3 +93,26 @@ Route::post('questions/import', [App\Http\Controllers\QuestionController::class,
 
 //Answers Excel documents import
 Route::post('answers/import', [App\Http\Controllers\AnswerController::class, 'importExcelAnswer'])->name('answers.import');
+
+
+Route::get('/challenges/{challengeId}', function ($challengeId) {
+	$challenge = Challenge::where('challengeId', $challengeId)->first();
+  
+	if (!$challenge) {
+	  return abort(404); // Handle non-existent challenge
+	}
+  
+	return view('challenge-details', compact('challenge')); // Render challenge-details.blade.php with data
+  })->name('challenge.details');
+  
+ // Search Route
+ Route::get('/admin/challenges/search', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.search');
+
+ // Edit Route
+Route::get('/admin/challenges/edit/{challengeId}', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.editchallenge');
+
+// Delete Route
+Route::delete('/admin/challenges/delete/{challengeId}', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.destroy');
+
+// Update Route
+Route::post('/admin/challenges/update/{challengeId}', 'ChallengeController@updateChallenge')->name('admin.challenges.update');

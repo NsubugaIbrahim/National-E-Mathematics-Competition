@@ -33,4 +33,15 @@ class ChallengesController extends Controller
             return redirect()->back()->with('status', 'Challenge has been successfully created and uploaded to the database');
         }
     }
+
+    public function searchChallenges(Request $request)
+        {
+          $searchTerm = $request->input('search');
+
+          $challenges = Challenge::where('challengeName', 'like', "%{$searchTerm}%")
+                                  ->orWhere('numberOfQuestions', $searchTerm)
+                                  ->get(); // Adjust search criteria as needed
+
+          return view('admin.challenges.viewchallenges', compact('challenges'));
+        }
 }
