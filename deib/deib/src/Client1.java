@@ -13,12 +13,12 @@ public class Client1 {
         BufferedReader K=new BufferedReader(new InputStreamReader(s.getInputStream()));//Recieves input from the server.
          BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));{
 System.out.println("Connected To Server. Please Enter your choice");
-System.out.println("MENU");
+while(true){System.out.println("MENU");
 System.out.println("Register--To Register");
 System.out.println("Validation Status --To check Validation Status");
 System.out.println("Login --To Login");
-System.out.println("Resset Password --To Resset Password");
-System.out.println("Fogot Password --In case of fogotten password");
+//System.out.println("Resset Password --To Resset Password");
+//System.out.println("Fogot Password --In case of fogotten password");
 System.out.println("Exit --To Exit");
 System.out.println("Please Enter your choice");
   String userOption = userInput.readLine();
@@ -143,9 +143,13 @@ else if(userOption.equals("Validation Status")){
      System.out.println(KK);
      PR.println("Waiting for response...");
      PR.flush();
+     //Response from the database
+     String ValidationStatus=K.readLine();
+     System.out.println(ValidationStatus);
     // System.out.println("Please wait a moment.......");
  }// Validation loop ends here.
-    }
+    }//Repition loop ends here
+}//Buffered reader ends here
 }//Main method ends here.
   // Method to validate if the email is in Gmail format
     public static boolean isValidGmail(String email) {

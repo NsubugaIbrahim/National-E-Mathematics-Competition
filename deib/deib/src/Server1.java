@@ -1,7 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.sql.*;
 public class Server1 {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException,ClassNotFoundException {
         ServerSocket serverSocket = new ServerSocket(2003);
         System.out.println("Server started. Waiting for client connection...");
         Socket socket = serverSocket.accept();
@@ -69,6 +70,13 @@ public class Server1 {
             System.out.println(userName);
             PR.println("Checking files. Please wait...");
             PR.flush();
+            String ss=K.readLine();
+            System.out.println(ss);
+            //Checking the database for login status
+            System.out.println(checkUsername(userName));
+            String ValidationStatus=checkUsername(userName);
+            PR.println(ValidationStatus);
+            PR.flush();
         }//Validation loop ends here.
        /*  FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin"); This kind of format overights the existing information in the file.
 
@@ -90,4 +98,52 @@ public class Server1 {
             oos.writeObject(un);
             BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream("user_data.bin", true));*/
     }//Main ends here.
+    //Method to Check database for user name in case of validation.
+    public static String checkUsername(String userName) throws ClassNotFoundException{
+        String result = "Not yet Validated";
+        Connection conn = null;
+        try {
+            // Load the database driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish a connection to the database
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
+
+            // Create a statement to execute the query
+            Statement stmt = conn.createStatement();
+
+            // Query the accepted table
+            ResultSet acceptedResultSet = stmt.executeQuery("SELECT * FROM accepted WHERE userName='" + userName + "'");
+
+            // Check if the username exists in the accepted table
+            if (acceptedResultSet.next()) {
+                result = "accepted";
+            } else {
+                // Query the rejected table
+                ResultSet rejectedResultSet = stmt.executeQuery("SELECT * FROM rejected WHERE username='" + userName + "'");
+                // Check if the username exists in the rejected table
+                if (rejectedResultSet.next()) {
+                    result = "rejected";
+                }/*else{
+                    result="Not yet validated";
+                }*/
+            }
+
+            // Close the statement and connection
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+        }
+        return result;
+    }
+
 }
