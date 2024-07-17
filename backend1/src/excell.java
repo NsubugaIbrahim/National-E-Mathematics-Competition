@@ -10,6 +10,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+//import org.apache.logging.log4j.LogManager;
 //import org.apache.xmlbeans.XmlException;
 
 import javax.imageio.ImageIO;
