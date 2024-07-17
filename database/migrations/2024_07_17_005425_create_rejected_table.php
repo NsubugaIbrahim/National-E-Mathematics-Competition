@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('participants', function (Blueprint $table) {
-            $table->id("participantId");
-            $table->string("challengeId");
-            $table->string("resultId");
+        Schema::create('rejected', function (Blueprint $table) {
+            $table->id("rejectedApplicantId");
             $table->string("username")->unique();
             $table->string("firstName");
             $table->string("lastName");
             $table->string("email")->unique();
+            $table->string("password");
             $table->date("dateOfBirth");
-            $table->string("schoolRegno");
+            $table->string("schoolRegNo");
+            $table->string("imageFilePath");
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('participants');
+        Schema::dropIfExists('rejected');
     }
 };

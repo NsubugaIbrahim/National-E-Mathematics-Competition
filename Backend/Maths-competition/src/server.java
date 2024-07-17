@@ -12,14 +12,17 @@ public class Server {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
-    public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(6666);
-        System.out.println("\n\nWelcome to the Competition!\n\n\n");
+    public static void main(String[] args) {
+        try (ServerSocket serverSocket = new ServerSocket(6666)) {
+            System.out.println("\n\nWelcome to the Competition!\n\n\n");
 
-        while (true) {
-            Socket socket = serverSocket.accept();
-            System.out.println("Client connected...");
-            new ClientHandler(socket).start();
+            while (true) {
+                Socket socket = serverSocket.accept();
+                System.out.println("Client connected...");
+                new ClientHandler(socket).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -112,9 +115,14 @@ public class Server {
                     out.println("Invalid option selected.");
                 }
 
-                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -189,7 +197,6 @@ public class Server {
     
         out.println("END");
     }
-    
 
     private List<Applicant> readApplicantsFromCSV(String filePath) {
         List<Applicant> applicants = new ArrayList<>();
