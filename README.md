@@ -1,48 +1,9 @@
 ## About national e mathematics challenge
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+it is as per the assignment below;
 
+Mathematics Challenge The International Education Services is organizing a mathematics competition for primary school children all over the country. All pupils in registered primary schools are eligible to take part in the competition. The schools are uploaded into the system by an administrator indicating the name, district, school registration number, email of representative and name of representative. These representatives are normally validated before being registered into the system. A registered administrator uploads questions and answers into the web system. If a challenge is to consist of 10 questions, 100 questions should be uploaded such that for each attempt, the 10 questions are selected randomly from the 100 questions.  The set questions are picked from an excel document (questions.xlxs) and they are accompanied by answers with accompanying marks from another excel document (answers.xlxs) for the corresponding questions.   The two excel documents are uploaded into the web system by the administrator. In order to open the competition, the administrator sets parameters including the date when the challenge will be opened and closed, the duration of the challenge will take, how many questions will be presented. As long as the dates are valid, the participants can log in and attempt the assignment. At the close of the challenge, a report of answers for all attempted questions are sent to all participants and the first two winners are recognized on the website. Each participant is automatically sent an email providing them a PDF report of the report of right answers.  For a pupil to participate in the competition, they should register using a command line interface. Before one can register, they are presented with a menu of instructions including  Register username firstname school_registration_number image_file.png ViewChallenges lastname emailAddress date_of_birth ViewChallenges displays challenges, which are still valid. If there are more than one valid challenges, a prospective participant will choose which competition they wish to participate in. One can participate in more than one challenge if they wish. If the school registration number does not match registered school numbers, the pupil is informed. If there is a match, the record is added to a file and an email notification is sent to the respective school representative reminding them to confirm the applicant.  School representatives log into the system via the command line interface to confirm the newly registered prospective participants via a menu item viewApplicants. The menu displays all applicants with their registration numbers. To reject or activate an applicant, the representative enters a menu item confirm yes/no username. If one is rejected, they are deleted from the file and moved into a database table rejected while those that are accepted are deleted from the file and inserted into the participant table in the database. An email notification is sent for all cases. If one tries to register again under the same school after being rejected, they are informed on the command line interface and denied from registering under the school.  Once accepted, the prospective participant can log in and see details of the challenges using viewChallenges command. If the challenge is open, the participant can issue a command attemptChallenge challengeNumber to start the challenge. Questions are picked randomly from those that were issued. A participant has a maximum of three chances to attempt a challenge and each attempt presents random questions. The questions will be presented one by one and each time a question is presented, the number of remaining questions and time are indicated above the question. If a wrong answer is given by a participant, 3 marks are deducted, while if a participant is not sure, they enter a negative or – and are awarded 0 for that question. Else, the participant gets the marks that were assigned to that particular question. When the time for attempting the question expires, the participant challenge is closed and the participant is given their score and report.  The report shows their scores and time taken, for each attempted question and the total time they have taken to complete the challenge.  The web system also gives analytics including i. ii. iii. iv. v. vi. vii. viii. The most correctly answered questions School Rankings Performance of schools and participants over the years and time Percentage repetition of questions for a given participant across attempts- use a formula of your own choice  List of worst performing schools for a given challenge  List of best performing schools for all challenges  List of participants with incomplete challenges  Other reports, which may add value to the project  
 
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
