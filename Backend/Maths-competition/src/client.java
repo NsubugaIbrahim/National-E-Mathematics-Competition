@@ -51,7 +51,7 @@ public class Client {
             String registrationDetails = userInput.readLine();
             out.println(registrationDetails);
 
-            System.out.println("Enter the image file path:");
+            System.out.println("Enter the image file path to upload it to the server:");
             String imagePath = userInput.readLine();
             File imageFile = new File(imagePath);
             byte[] imageBytes = new byte[(int) imageFile.length()];
@@ -106,6 +106,10 @@ public class Client {
                         break;
                     }
                     System.out.println(applicantDetails);
+                    System.out.println(in.readLine());
+                    System.out.println(in.readLine());
+                    System.out.println(in.readLine());
+                    System.out.println(in.readLine());
                     System.out.println(in.readLine()); // Confirm acceptance
                     String decision = userInput.readLine();
                     out.println(decision);

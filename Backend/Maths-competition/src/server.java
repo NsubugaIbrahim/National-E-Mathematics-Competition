@@ -177,7 +177,15 @@ public class Server {
     
         if (!filteredApplicants.isEmpty()) {
             for (Applicant applicant : filteredApplicants) {
-                out.println("Applicant Details: " + applicant);
+                out.println("Applicant Details:");
+                out.println("Username: " + applicant.getUsername());
+                out.println("First Name: " + applicant.getFirstName());
+                out.println("Last Name: " + applicant.getLastName());
+                out.println("Email: " + applicant.getEmail());
+                out.println("Password: " + applicant.getPassword());
+                out.println("Date of Birth: " + applicant.getDateOfBirth());
+                out.println("School Registration Number: " + applicant.getSchoolRegistrationNumber());
+                out.println("Image Filename: " + applicant.getImageFilename());
                 out.println("Confirm acceptance of this applicant by entering: yes/no username");
     
                 String response = in.readLine();
