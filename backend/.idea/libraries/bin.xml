@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="bin">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/bin/activation-1.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/javax.mail.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bin/mysql-connector-j-9.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

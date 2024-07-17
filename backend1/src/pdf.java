@@ -1,12 +1,12 @@
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.json.JSONObject;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.json.JSONObject;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import javax.imageio.ImageIO;
 import javax.mail.*;
@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,8 +29,8 @@ public class pdf {
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
-    private static final String FILE_PATH = "registrationdetails.pdf"; // PDF file path
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
+    private static final String FILE_PATH = "registrationdetails.pdf"; // PDF file path
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(6666)) {
@@ -121,41 +120,50 @@ public class pdf {
                 throw new FileNotFoundException("Image file not found: " + imagePath);
             }
 
-            // Create PDF document
+            // Create or load existing PDF document
+            PDDocument document;
             File file = new File(FILE_PATH);
-            PDDocument document = Loader.loadPDF(file);
-            PDPage page = new PDPage();
+            if (file.exists()) {
+                document = Loader.loadPDF(file);
+            } else {
+                document = new PDDocument();
+            }
+
+            // Add a new page for the current participant
+            PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
             // Write registration details to PDF
-            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            PDType0Font helveticaBold = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
-            contentStream.setFont(helveticaBold, 12);
-            contentStream.beginText();
-            contentStream.setLeading(14.5f);
-            contentStream.newLineAtOffset(50, 750);
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                PDType0Font helveticaBold = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
+                contentStream.setFont(helveticaBold, 12);
+                contentStream.beginText();
+                contentStream.setLeading(14.5f);
+                contentStream.newLineAtOffset(50, 750);
 
-            contentStream.showText("Username: " + username);
-            contentStream.newLine();
-            contentStream.showText("First Name: " + firstname);
-            contentStream.newLine();
-            contentStream.showText("Last Name: " + lastname);
-            contentStream.newLine();
-            contentStream.showText("Email: " + email);
-            contentStream.newLine();
-            contentStream.showText("Password: " + password);
-            contentStream.newLine();
-            contentStream.showText("Date of Birth: " + dob);
-            contentStream.newLine();
-            contentStream.showText("School Registration Number: " + schoolRegNo);
-            contentStream.endText();
-            contentStream.close();
+                contentStream.showText("Username: " + username);
+                contentStream.newLine();
+                contentStream.showText("First Name: " + firstname);
+                contentStream.newLine();
+                contentStream.showText("Last Name: " + lastname);
+                contentStream.newLine();
+                contentStream.showText("Email: " + email);
+                contentStream.newLine();
+                contentStream.showText("Password: " + password);
+                contentStream.newLine();
+                contentStream.showText("Date of Birth: " + dob);
+                contentStream.newLine();
+                contentStream.showText("School Registration Number: " + schoolRegNo);
+                contentStream.endText();
+            }
 
             // Add image to PDF
-            contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
-            PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, document);
-            contentStream.drawImage(pdImage, 25, 100, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
-            contentStream.close();
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+                PDImageXObject pdImage = addImageToPDF(document, imagePath);
+                if (pdImage != null) {
+                    contentStream.drawImage(pdImage, 25, 100, pdImage.getWidth() / 2, pdImage.getHeight() / 2);
+                }
+            }
 
             // Save PDF
             document.save(FILE_PATH);
@@ -163,7 +171,7 @@ public class pdf {
 
             System.out.println("Registration details saved to " + FILE_PATH);
 
-            // Send email confirmation (implement this method according to your requirements)
+            // Send email confirmation
             sendEmail(email, username, firstname, lastname, dob);
 
             out.println("Registration successful!");
@@ -172,17 +180,6 @@ public class pdf {
             out.println("Registration failed. Please try again.");
         }
     }
-    
-
-   /*  private static PDImageXObject addImageToPDF(PDDocument document, String imagePath) throws IOException {
-        File imageFile = new File(imagePath);
-        if (!imageFile.exists()) {
-            System.err.println("Image file not found: " + imagePath);
-            return null;
-        }
-
-        return PDImageXObject.createFromFileByContent(imageFile, document);
-    }*/ 
 
     private static PDImageXObject addImageToPDF(PDDocument document, String imagePath) throws IOException {
         File imageFile = new File(imagePath);
@@ -190,43 +187,43 @@ public class pdf {
             System.err.println("Image file not found: " + imagePath);
             return null;
         }
-    
+
         BufferedImage bufferedImage = ImageIO.read(imageFile);
         if (bufferedImage == null) {
             System.err.println("Failed to read image: " + imagePath);
             return null;
         }
-    
-        // Resize the image to fit within 250x250 pixels
-        int maxWidth = 250;
-        int maxHeight = 250;
-    
+
+        // Resize the image to fit within 100X100 pixels
+        int maxWidth = 100;
+        int maxHeight = 100;
+
         double widthScale = (double) maxWidth / bufferedImage.getWidth();
         double heightScale = (double) maxHeight / bufferedImage.getHeight();
         double scale = Math.min(widthScale, heightScale);
-    
+
         int scaledWidth = (int) (bufferedImage.getWidth() * scale);
         int scaledHeight = (int) (bufferedImage.getHeight() * scale);
-    
+
         BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
         resizedImage.createGraphics().drawImage(bufferedImage, 0, 0, scaledWidth, scaledHeight, null);
-    
+
         // Convert resized BufferedImage to PDImageXObject
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(resizedImage, "png", baos);
         baos.flush();
         byte[] imageBytes = baos.toByteArray();
         baos.close();
-    
+
         return PDImageXObject.createFromByteArray(document, imageBytes, "image");
     }
-    
 
     private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please enter two numbers separated by a space to add:");
+        out.println("Please enter two numbers separated by a space:");
 
-        String numbers = in.readLine();
-        String[] numArray = numbers.split(" ");
+        String input = in.readLine();
+        String[] numArray = input.split(" ");
+
         if (numArray.length == 2) {
             try {
                 int num1 = Integer.parseInt(numArray[0]);
@@ -285,7 +282,7 @@ public class pdf {
             emailContent += "Your registration details have been successfully received and are under review.\n";
             emailContent += "Username: " + username + "\n";
             emailContent += "firstname: " + firstname + "\n ";
-            emailContent += "lastname: " + lastname + "\n" ;
+            emailContent += "lastname: " + lastname + "\n";
             emailContent += "Date of Birth: " + dob + "\n";
             emailContent += "Please keep this email for future reference.\n\n";
             emailContent += "You will be receiving an email once your registration is approved.\n\n";
