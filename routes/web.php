@@ -6,6 +6,7 @@ use App\Http\Controllers\ChallengesviewController;
 use App\Models\Challenge;
 use App\Models\School;
 use App\Models\Representative;
+use App\Models\Participant;
 
 /*
 |--------------------------------------------------------------------------
@@ -159,6 +160,34 @@ Route::post('/admin/representatives/update/{representativeId}', 'App\Http\Contro
 // Delete Route
 Route::delete('/admin/representatives/delete/{representativeId}', 'App\Http\Controllers\RepresentativesviewController@destroyRepresentative')->name('admin.representatives.destroy');
 
+
+//Route for viewing participants
+Route::get('notifications', [App\Http\Controllers\ParticipantController::class, 'viewparticipants'])->name('participants');
+
+//Participants template page
+Route::get('/participant/{participantId}', function ($participantId) {
+	$participant = Participant::where('participantId', $participantId)->first();
+  
+	if (!$participant) {
+	  return abort(404); // Handle non-existent participant
+	}
+  
+	return view('participant-details', compact('participant')); // Render participant-details.blade.php with data
+  })->name('participant.details');
+
+
+  // Search Route
+  Route::get('/admin/participants/search', 'App\Http\Controllers\ParticipantController@searchParticipants')->name('admin.participants.search');
+  
+  // Edit Route
+  Route::get('/admin/participants/edit/{participantId}', 'App\Http\Controllers\ParticipantController@editParticipant')->name('admin.participants.editparticipant');
+  
+  // Update Route
+  Route::post('/admin/participants/update/{participantId}', 'App\Http\Controllers\ParticipantController@updateParticipant')->name('admin.participants.update');
+  
+  
+  // Delete Route
+  Route::delete('/admin/participants/delete/{participantId}', 'App\Http\Controllers\ParticipantController@destroyParticipant')->name('admin.participants.destroy');
 
 
 

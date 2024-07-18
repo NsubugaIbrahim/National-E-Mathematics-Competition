@@ -66,7 +66,7 @@
                 </a>
             </li>
             <li @if ($pageSlug == 'notifications') class="active " @endif>
-                <a href="{{ route('pages.notifications') }}">
+                <a href="{{ route('participants') }}">
                 <i class="tim-icons icon-paper"></i>
                     <h4>{{ __('notifications') }}</h4>
                 </a>

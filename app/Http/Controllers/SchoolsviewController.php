@@ -41,7 +41,7 @@ class SchoolsviewController extends Controller
               $school = School::find($schoolId);
       
               if (!$school) {
-                  return abort(404); // Handle non-existent challenge
+                  return abort(404); // Handle non-existent school
               }
       
               $request->validate([
