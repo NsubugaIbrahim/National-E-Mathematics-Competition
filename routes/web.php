@@ -109,10 +109,12 @@ Route::get('/challenges/{challengeId}', function ($challengeId) {
  Route::get('/admin/challenges/search', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.search');
 
  // Edit Route
-Route::get('/admin/challenges/edit/{challengeId}', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.editchallenge');
-
-// Delete Route
-Route::delete('/admin/challenges/delete/{challengeId}', 'App\Http\Controllers\ChallengesviewController@searchChallenges')->name('admin.challenges.destroy');
+Route::get('/admin/challenges/edit/{challengeId}', 'App\Http\Controllers\ChallengesviewController@editChallenge')->name('admin.challenges.editchallenge');
 
 // Update Route
-Route::post('/admin/challenges/update/{challengeId}', 'ChallengeController@updateChallenge')->name('admin.challenges.update');
+Route::post('/admin/challenges/update/{challengeId}', 'App\Http\Controllers\ChallengesviewController@updateChallenge')->name('admin.challenges.update');
+
+
+// Delete Route
+Route::delete('/admin/challenges/delete/{challengeId}', 'App\Http\Controllers\ChallengesviewController@destroyChallenge')->name('admin.challenges.destroy');
+

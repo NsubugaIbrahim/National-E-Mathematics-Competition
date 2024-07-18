@@ -9,6 +9,10 @@
      .logo{
     margin-top: -60px;
     }
+    .nav a:hover {
+        background-color: #852a90; 
+        color: #AAAAAA; 
+    }
 </style>
 </head>
 <div class="sidebar">

@@ -41,13 +41,13 @@
                         @endif
                     </td>
                     <td>
-    <a href="{{ route('admin.challenges.editchallenge', $c->challengeId) }}" class="btn btn-primary btn-sm">Edit</a>
-    <form action="{{ route('admin.challenges.destroy', $c->challengeId) }}" method="POST" style="display: inline-block">
-      @csrf
-      @method('DELETE')
-      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this challenge?')">Delete</button>
-    </form>
-  </td>
+                    <a href="{{ route('admin.challenges.editchallenge', $c->challengeId) }}" class="btn btn-primary btn-sm">Edit</a>
+                        <form action="{{ route('admin.challenges.destroy', $c->challengeId) }}" method="POST" style="display: inline-block">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this challenge?')">Delete</button>
+</form>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>                

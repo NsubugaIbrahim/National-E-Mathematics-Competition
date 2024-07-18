@@ -16,6 +16,7 @@ class ChallengesviewController extends Controller
         dd($arr);
     }
 
+    //Display Challenge template page
     public function showChallengeDetails($challengeId)
       {
         $challenge = Challenge::where('challengeId', $challengeId)->first();
@@ -28,6 +29,7 @@ class ChallengesviewController extends Controller
         return view('challenge-details', compact('challengeData'));
       }
 
+    //Search function
     public function searchChallenges(Request $request)
         {
           $searchTerm = $request->input('search');
@@ -38,6 +40,7 @@ class ChallengesviewController extends Controller
           return view('admin.challenges.viewchallenges', compact('challenges'));
         }
 
+        //Edit funtion
         public function editChallenge($challengeId)
           {
             $challenge = Challenge::find($challengeId);
@@ -46,33 +49,39 @@ class ChallengesviewController extends Controller
               return abort(404); // Handle non-existent challenge
             }
 
-            return view('admin.challenges.editchallenge', compact('challenges'));
+            return view('admin.challenges.editchallenge', compact('challenge'));
           }
 
           public function updateChallenge($challengeId, Request $request)
           {
-            $challenge = Challenge::find($challengeId);
-          
-            if (!$challenge) {
-              return abort(404); // Handle non-existent challenge
-            }
-          
-            // Validate and update challenge data using $request object
-            // ... (implementation omitted for brevity)
-          
-            return redirect()->route('admin.challenges.viewchallenges')->with('success', 'Challenge updated successfully!');
-          }
-
-          public function destroyChallenge($challengeId)
-            {
               $challenge = Challenge::find($challengeId);
-
+      
               if (!$challenge) {
-                return abort(404); // Handle non-existent challenge
+                  return abort(404); // Handle non-existent challenge
+              }
+      
+              $request->validate([
+                  'numberOfQuestions' => 'required|integer',
+                  'duration' => 'required',
+                  'startDate' => 'required|date',
+                  'endDate' => 'required|date',
+              ]);
+      
+              $challenge->update($request->all());
+      
+              return redirect()->route('challenges')->with('success', 'Challenge updated successfully!');
+          }
+      
+          public function destroyChallenge($challengeId)
+              {
+                  $challenge = Challenge::find($challengeId);
+
+                  if (!$challenge) {
+                      return abort(404); // Handle non-existent challenge
+                  }
+
+                  $challenge->delete();
+                  return redirect()->route('challenges')->with('success', 'Challenge deleted successfully!');
               }
 
-              $challenge->delete();
-
-              return redirect()->route('admin.challenges.viewchallenges')->with('success', 'Challenge deleted successfully!');
-            }
 }
