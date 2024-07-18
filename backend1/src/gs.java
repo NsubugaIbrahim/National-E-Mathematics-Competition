@@ -1,5 +1,6 @@
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.commons.io.input.BoundedInputStream;
 
 import java.io.*;
 import java.util.Base64;
@@ -50,7 +51,7 @@ public class gs {
             File file = new File(EXCEL_FILE_PATH);
             if (file.exists()) {
                 fileInputStream = new FileInputStream(file);
-                workbook = new XSSFWorkbook(fileInputStream);
+                workbook = new XSSFWorkbook(fileInputStream); // This line likely triggers the error
             } else {
                 workbook = new XSSFWorkbook();
             }
@@ -72,6 +73,7 @@ public class gs {
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Error occurred: " + e.getMessage());
         } finally {
             try {
                 if (fileInputStream != null) {

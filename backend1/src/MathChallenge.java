@@ -1,7 +1,5 @@
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,7 +20,7 @@ public class MathChallenge {
     private static final String USER = "root";
     private static final String PASS = "";
 
-    public static void handleMathChallenge(BufferedReader in, PrintWriter out) throws IOException{
+    public static void main(String[] args) {
         List<Question> challengeQuestions = getRandomQuestions(10);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Question, String> userAnswers = new HashMap<>();

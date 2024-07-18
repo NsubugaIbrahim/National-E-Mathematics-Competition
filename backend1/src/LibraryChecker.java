@@ -6,6 +6,8 @@ public class LibraryChecker {
             Class.forName("org.apache.xmlbeans.XmlException");
             Class.forName("org.apache.commons.compress.archivers.ArchiveStreamFactory");
             Class.forName("org.apache.commons.collections4.ListValuedMap");
+            Class.forName("org.apache.commons.collections4.multimap.ArrayListValuedHashMap");
+            
             System.out.println("All required libraries are present.");
         } catch (ClassNotFoundException e) {
             System.err.println("Missing library: " + e.getMessage());

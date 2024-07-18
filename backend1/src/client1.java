@@ -14,8 +14,7 @@ public class client1 {
 
                 // Check if server sends a question
                 if (serverResponse.startsWith("Question: ")) {
-                    String question = serverResponse.substring("Question: ".length()); // Extract question text
-                    System.out.print(question + " "); // Display question to user
+                    System.out.print("Your answer: "); // Prompt user for an answer
                     String userAnswer = userInput.readLine(); // Read user's answer
                     out.println(userAnswer); // Send user's answer to server
                 } else if (serverResponse.startsWith("You scored: ")) {

@@ -168,42 +168,39 @@ public class server {
         }
     }
 
-    private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException{
+    private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
         List<Question> challengeQuestions = getRandomQuestions(10);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Question, String> userAnswers = new HashMap<>();
-        Scanner scanner = new Scanner(System.in);
         int totalMarks = 0;
-
+    
         for (Question question : challengeQuestions) {
-        // Send question text to client
-        out.println(question.getQuestionText());
-        out.flush();
-
-        // Receive answer from client
-        String answer = in.readLine().trim();
-        userAnswers.put(question, answer);
-
-        // Check answer correctness
-        if (correctAnswers.containsKey(question.getQuestionId()) &&
-            correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
-            totalMarks++;
-            out.println("Correct!");
-        } else {
-            out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
+            // Send question text to client
+            out.println("Question: " + question.getQuestionText());
+            out.flush(); // Ensure the question is sent immediately
+    
+            // Receive answer from client
+            String answer = in.readLine().trim();
+            userAnswers.put(question, answer);
+    
+            // Check answer correctness
+            if (correctAnswers.containsKey(question.getQuestionId()) &&
+                correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
+                totalMarks++;
+                out.println("Correct!");
+            } else {
+                out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
+            }
+            out.flush(); // Ensure response is sent immediately
         }
-        out.println(); // Blank line for formatting on client side
-        out.flush();
-    }
-
-    out.println("You scored: " + totalMarks + " out of " + challengeQuestions.size());
-    out.flush();
-
-    scanner.close();
-        
+    
+        out.println("You scored: " + totalMarks + " out of " + challengeQuestions.size());
+        out.flush(); // Ensure the final score is sent immediately
+    
         // Generate PDF report
         generatePDFReport(userAnswers, correctAnswers, totalMarks, challengeQuestions.size());
     }
+    
 
     public static List<Question> getRandomQuestions(int numberOfQuestions) {
         List<Question> questions = new ArrayList<>();
