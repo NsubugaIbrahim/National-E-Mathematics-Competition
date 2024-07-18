@@ -63,7 +63,7 @@
             </tbody>
         </table>
         <br>
-        <button id="" class="btn btn-secondary"><i class="tim-icons icon-cloud-upload-94"></i>   Validate all School representatives</button>
+        <button id="" class="btn btn-secondary"><i class="tim-icons icon-cloud-upload-94"></i>   Validate School representative(s)</button>
         </form>
                     @if (session('status'))
                         <div class="alert alert-success">{{session('status')}}</div>

@@ -3,6 +3,11 @@
 @section('content')
 <html>
 <head>
+    <style>
+         .alert.alert-success{
+                    width: 50%;
+                }
+    </style>
 </head>
 <body>
     <div class="content">  
@@ -15,6 +20,10 @@
                 </div>
                 <button type="submit" class="btn btn-primary mb-2">Search</button>
             </form>
+
+                        @if (session('success'))
+                            <div class="alert alert-success">{{session('success')}}</div>
+                        @endif
 
         <table class="table table-bordered table-striped">
             <thead>
