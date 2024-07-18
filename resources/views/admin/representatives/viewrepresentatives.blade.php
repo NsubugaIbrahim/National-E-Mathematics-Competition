@@ -19,7 +19,7 @@
             <tbody>
                 @foreach($representatives as $c)
                 <tr>
-                    <td>{{$c->representativeId}}</td>
+                <td><a href="{{ route('representative.details', $c->representativeId) }}">{{$c->representativeId}}</a></td>
                     <td>{{$c->representativeName}}</td>
                     <td>{{$c->representativeEmail}}</td>
                     <td>{{$c->schoolRegNo}}</td>
