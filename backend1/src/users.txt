@@ -1,0 +1,4 @@
+vfvv,vfvb,vmkf,Ajknjkn@kmf.com,Adkmfmkf,2003-02-02,12345,images/profileblue.jpg
+krahim,Kayiwa,Rahim,agchbch@fj.com,Admin@1234,2003-03-04,fenjfn,images/profileblue.jpg
+sibra,Nsubuga,ibrahim,nsub@gmail.com,Admin@1234,2004-04-04,12345,images/profileblue.jpg
+jnakalema,Nakalema,Julian,julianakalema@gmail.com,Admin@1234,12345,12345,images/julian.jpg
