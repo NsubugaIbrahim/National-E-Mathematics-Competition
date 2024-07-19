@@ -67,7 +67,12 @@
 
                   <div class="form-group col-md-3">
                     <label>Representative Email</label>
-                    <input type="email" class="form-control" value="{{ Request::get('representative_email')}}" name="representative_email"  placeholder="Representative Email">
+                    <input type="text" class="form-control" value="{{ Request::get('representative_email')}}" name="representative_email"  placeholder="Representative Email">
+                  </div>
+
+                  <div class="form-group col-md-3">
+                    <label>School RegNo.</label>
+                    <input type="school_regNo" class="form-control" value="{{ Request::get('school_regNo')}}" name="school_regNo"  placeholder="School RegNo">
                   </div>
     
                   <div class="form-group col-md-3 align-self-end">

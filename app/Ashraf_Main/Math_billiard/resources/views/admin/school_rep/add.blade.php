@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | School Tables</title>
+  <title>AdminLTE 3 | School Representatives</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -23,7 +23,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Add New school</h1>
+            <h1>Add New school Representative</h1>
           </div>
          
         </div>
@@ -54,19 +54,7 @@
                     </div>
                 @endif
                 <div class="card-body">
-                  <div class="form-group">
-                    <label>School Name</label>
-                    <input type="text" class="form-control" value="{{ old('name')}}" name="name" required placeholder="School Name">
-                  </div>
-                  <div class="form-group">
-                    <label>District</label>
-                    <input type="text" class="form-control" value="{{ old('district')}}" name="district" required placeholder="District">
-                  </div>
-                  <div class="form-group">
-                    <label>School Registration No.</label>
-                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
-                  </div>
-                  <div class="form-group">
+                <div class="form-group">
                     <label>Representative Name</label>
                     <input type="text" class="form-control" value="{{ old('representative_name')}}" name="representative_name" required placeholder="School Representative Name">
                   </div>
@@ -74,6 +62,11 @@
                     <label>Representative Email</label>
                     <input type="text" class="form-control" value="{{ old('representative_email')}}" name="representative_email" required placeholder="School Representative Email">
                   </div>
+                  <div class="form-group">
+                    <label>School Registration No.</label>
+                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
+                  </div>
+                  
 
                 <!-- /.card-body -->
 

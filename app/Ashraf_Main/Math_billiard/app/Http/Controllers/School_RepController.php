@@ -3,117 +3,89 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use App\Models\SchoolRepModel;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\QuestionsImport;
+use App\Imports\AnswersImport;
+// use App\Models\ClassModel;
 
 class School_RepController extends Controller
 {
-    public function list()
+    public function exam_list()
     {
-        $data['getRecord'] = User::getSchool_Rep();
-        $data['header_title'] = "School Representatives List";
+        $data['getRecord'] = SchoolRepModel::getRecord();
+        $data['header_title'] = "School Rep List";
         return view('admin.school_rep.list', $data);
     }
-
-    public function add()
+    
+    public function exam_add()
     {
-        $data['header_title'] = "Add New Representative";
+        $data['header_title'] = "Add New School";
         return view('admin.school_rep.add', $data);
     }
 
-
-    public function insert(Request $request)
+    public function exam_insert(Request $request)
     {
-         // Validate unique email, ignoring the current user's email
-         $request->validate([
-            'email' => 'required|email|max:255|unique:users,email,' . $request->id,
-            'address' => 'max:255',
+        $request->validate([
+            'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
+            'school_regNo' => 'required|string|max:255',
         ]);
 
-        $student = new User;
-        $student->name = trim($request->name);
-        $student->last_name = trim($request->last_name);
-      
-       
-        if (!empty($request->file('profile_pic'))) {
-            if (!empty($student->getProfile())) {
-                unlink('upload/profile/' . $student->profile_pic);
-            }
-            $ext = $request->file('profile_pic')->getClientOriginalExtension();
-            $file = $request->file('profile_pic');
-            $randomStr = date('ymdhis') . Str::random(20);
-            $filename = strtolower($randomStr) . '.' . $ext;
-            $file->move('upload/profile/', $filename);
-            $student->profile_pic = $filename;
-        }
+        $exam = new SchoolRepModel;
+        $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->created_by = Auth::user()->id;
+        $exam->save();
 
-              
-        $student->email = trim($request->email);
-        $student->password = Hash::make($request->password);
-        $student->address = trim($request->address);
-        $student->user_type = 2;
-        $student->save();
-
-        return redirect('admin/school_rep/list')->with('success', "School representative successfully created");
+        return redirect('admin/school_rep/list')->with('success', "School Representative successfully created");
     }
 
-    public function edit($id)
+    public function exam_edit($id)
     {
-        $data['getRecord'] = User::getSingle($id);
-        if (!empty($data['getRecord'])) 
-        {                       
-            $data['header_title'] = "Edit Representative";
+        $data['getRecord'] = SchoolRepModel::getSingle($id);
+        if(!empty($data['getRecord']))
+        {
+            $data['header_title'] = "Edit School";
             return view('admin.school_rep.edit', $data);
-        } else {
+        }
+        else
+        {
             abort(404);
         }
     }
 
-    public function update($id, Request $request)
+    public function exam_update($id, Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255|unique:users,email,' . $request->id,
-            'address' => 'max:255',
+            'name' => 'required|string|max:255',
+            'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
         ]);
 
-        $student = User::getSingle($id);
+        $exam = SchoolRepModel::getSingle($id);
+        $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->save();
 
-        $student->name = trim($request->name);
-        $student->last_name = trim($request->last_name);
-        $student->email = trim($request->email);
-      
-       
-        if (!empty($request->file('profile_pic'))) {
-            if (!empty($student->getProfile())) {
-                unlink('upload/profile/' . $student->profile_pic);
-            }
-            $ext = $request->file('profile_pic')->getClientOriginalExtension();
-            $file = $request->file('profile_pic');
-            $randomStr = date('ymdhis') . Str::random(20);
-            $filename = strtolower($randomStr) . '.' . $ext;
-            $file->move('upload/profile/', $filename);
-            $student->profile_pic = $filename;
-        }
-
-              
-        if (!empty($request->password)) {
-            $student->password = Hash::make($request->password);
-        }
-
-        $student->save();
-
-        return redirect('admin/school_rep/list')->with('success', "{$student->name} is successfully updated");
+        return redirect('admin/school_rep/list')->with('success', "School successfully updated");
     }
-
-    public function delete($id)
+    
+    public function exam_delete($id)
     {
-        $user = User::getSingle($id);
-        $user->is_delete = 1;
-        $user->save();
+        $getRecord = SchoolRepModel::getSingle($id);
+        if (!empty($getRecord)) {
+            $getRecord->is_delete = 1;
+            $getRecord->save();
 
-        return redirect('admin/school_rep/list')->with('success', "{$user->name} has been successfully deleted");
+            return redirect()->back()->with('success', "School Representative successfully deleted");
+        } else {
+            abort(404);
+        }
     }
+   
 }

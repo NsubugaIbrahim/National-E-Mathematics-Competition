@@ -42,13 +42,13 @@ Route::group(['middleware' => 'admin'], function() {
 
 
     // School Representatives
-    Route::get('/admin/school_rep/list', [School_RepController::class, 'list']);
-    Route::get('/admin/school_rep/add', [School_RepController::class, 'add']);
-    Route::post('/admin/school_rep/add', [School_RepController::class, 'insert']);
-    Route::get('/admin/school_rep/edit/{id}', [School_RepController::class, 'edit']); 
-    Route::post('/admin/school_rep/edit/{id}', [School_RepController::class, 'update']);
-    Route::get('/admin/school_rep/delete/{id}', [School_RepController::class, 'delete']);
-    Route::get('/admin/school_rep/my_student/{id}', [School_RepController::class, 'myStudent']);
+    Route::get('/admin/school_rep/list', [School_RepController::class, 'exam_list']);
+    Route::get('/admin/school_rep/add', [School_RepController::class, 'exam_add']);
+    Route::post('/admin/school_rep/add', [School_RepController::class, 'exam_insert']);
+    Route::get('/admin/school_rep/edit/{id}', [School_RepController::class, 'exam_edit']); 
+    Route::post('/admin/school_rep/edit/{id}', [School_RepController::class, 'exam_update']);
+    Route::get('/admin/school_rep/delete/{id}', [School_RepController::class, 'exam_delete']);
+    
 
     // Student routes
     Route::get('/admin/student/list', [StudentController::class, 'list'])->name('admin.student.list');
