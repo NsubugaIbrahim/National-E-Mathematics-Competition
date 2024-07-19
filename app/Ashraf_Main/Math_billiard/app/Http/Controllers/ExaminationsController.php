@@ -30,16 +30,18 @@ class ExaminationsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'note' => 'nullable|string|max:1000',
+            'district' => 'nullable|string|max:1000',
             'school_regNo' => 'required|string|max:255',
             'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
         ]);
 
         $exam = new ExamModel;
         $exam->name = trim($request->name);
-        $exam->note = trim($request->note);
+        $exam->district = trim($request->district);
         $exam->school_regNo = trim($request->school_regNo);
         $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
         $exam->created_by = Auth::user()->id;
         $exam->save();
 
@@ -64,16 +66,18 @@ class ExaminationsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'note' => 'nullable|string|max:1000',
+            'district' => 'nullable|string|max:1000',
             'school_regNo' => 'required|string|max:255',
             'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
         ]);
 
         $exam = ExamModel::getSingle($id);
         $exam->name = trim($request->name);
-        $exam->note = trim($request->note);
+        $exam->district = trim($request->district);
         $exam->school_regNo = trim($request->school_regNo);
         $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
         $exam->save();
 
         return redirect('admin/exam/list')->with('success', "School successfully updated");

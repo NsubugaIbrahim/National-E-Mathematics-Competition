@@ -56,19 +56,23 @@
                 <div class="card-body">
                   <div class="form-group">
                     <label>School Name</label>
-                    <input type="name" class="form-control" value="{{ old('name')}}" name="name" required placeholder="Exam Name">
+                    <input type="text" class="form-control" value="{{ old('name')}}" name="name" required placeholder="School Name">
                   </div>
                   <div class="form-group">
-                    <label>Address</label>
-                    <input type="note" class="form-control" value="{{ old('note')}}" name="note" required placeholder="Address">
+                    <label>District</label>
+                    <input type="text" class="form-control" value="{{ old('district')}}" name="district" required placeholder="District">
                   </div>
                   <div class="form-group">
                     <label>School Registration No.</label>
-                    <input type="school_regNo" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
+                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
                   </div>
                   <div class="form-group">
                     <label>Representative Name</label>
-                    <input type="representative_name" class="form-control" value="{{ old('representative_name')}}" name="representative_name" required placeholder="School Representative Name">
+                    <input type="text" class="form-control" value="{{ old('representative_name')}}" name="representative_name" required placeholder="School Representative Name">
+                  </div>
+                  <div class="form-group">
+                    <label>Representative Email</label>
+                    <input type="text" class="form-control" value="{{ old('representative_email')}}" name="representative_email" required placeholder="School Representative Email">
                   </div>
 
                 <!-- /.card-body -->

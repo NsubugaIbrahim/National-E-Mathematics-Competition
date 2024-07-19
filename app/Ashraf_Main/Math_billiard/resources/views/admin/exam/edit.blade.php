@@ -55,8 +55,8 @@
                     <input type="text" id="name" class="form-control" value="{{ $getRecord->name }}" name="name" required placeholder="Exam Name">
                   </div>
                   <div class="form-group">
-                    <label for="note">Address</label>
-                    <input type="text" id="note" class="form-control" name="note" placeholder="Address" value="{{ $getRecord->note }}">
+                    <label for="district">District</label>
+                    <input type="text" id="district" class="form-control" name="district" placeholder="Address" value="{{ $getRecord->district }}">
                   </div>
                   <div class="form-group">
                     <label for="name">School Registration No.</label>
@@ -65,6 +65,10 @@
                   <div class="form-group">
                     <label for="representative_name">Representative Name</label>
                     <input type="text" id="representative_name" class="form-control" name="representative_name" placeholder="Representative Name" value="{{ $getRecord->representative_name }}">
+                  </div>
+                  <div class="form-group">
+                    <label for="representative_name">Representative Email</label>
+                    <input type="email" id="representative_email" class="form-control" name="representative_email" placeholder="Representative Email" value="{{ $getRecord->representative_email }}">
                   </div>
                   <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Update</button>

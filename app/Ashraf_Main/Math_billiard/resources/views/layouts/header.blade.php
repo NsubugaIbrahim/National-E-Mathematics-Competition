@@ -268,27 +268,11 @@
             </li>
           </ul>
         </li>
-        <li class="nav-item has-treeview {{ Request::is('admin/exams*') ? 'menu-open' : '' }}">
-          <a href="#" class="nav-link {{ Request::is('admin/exams*') ? 'active' : '' }}">
-            <i class="nav-icon fas fa-file-alt"></i>
-            <p>Examinations<i class="right fas fa-angle-left"></i></p>
+        <li class="nav-item">
+          <a href="{{ url('admin/exam/list') }}" class="nav-link {{ Route::is('admin.exam.list') ? 'active' : '' }}">
+          <i class="fas fa-school"></i>
+            <p>Schools</p>
           </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="{{ url('admin/exam/list') }}" class="nav-link {{ Request::is('admin/exam*') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-clipboard"></i>
-                <p>Exam List</p>
-              </a>
-            </li>
-
-            <li class="nav-item">
-              <a href="{{ url('admin/exam/exam_schedule') }}" class="nav-link {{ Request::is('admin/exam*') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-pencil-alt"></i>
-                <p>Exam Schedule</p>
-              </a>
-            </li>
-            <!-- Add other examination related links here -->
-          </ul>
         </li>
         <li class="nav-item">
           <a href="{{ route('logout') }}" class="nav-link" onclick="confirmLogout(event)">

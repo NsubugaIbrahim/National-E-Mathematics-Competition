@@ -64,14 +64,17 @@
                     <label>School Name</label>
                     <input type="name" class="form-control" value="{{ Request::get('name')}}" name="name"  placeholder="School Name">
                   </div>
-                  
 
                   <div class="form-group col-md-3">
-                    <label>Date</label>
-                    <input type="date" class="form-control" value="{{ Request::get('date')}}" name="date"  placeholder="Date">
-                    
+                    <label>District</label>
+                    <input type="district" class="form-control" value="{{ Request::get('district')}}" name="district"  placeholder="District">
                   </div>
 
+                  <div class="form-group col-md-3">
+                    <label>Representative Name</label>
+                    <input type="representative_name" class="form-control" value="{{ Request::get('representative_name')}}" name="representative_name"  placeholder="Representative Name">
+                  </div>
+                 
                   <div class="form-group col-md-3 align-self-end">
                         <button class="btn btn-success" type="submit">Search</button>
                         <a href={{ url('admin/exam/list')}} class="btn btn-primary">Clear</a>
@@ -108,11 +111,11 @@
                     <tr>
                       <th>#</th>
                       <th>School Name</th>
-                      <th>Address</th>
+                      <th>District</th>
                       <th>School RegNo.</th>
                       <th>Representative Name</th>
-                      <th>Created By</th>
-                      <th>Created Date</th>
+                      <th>Representative Email</th>
+                      <!-- <th>Created By</th>-->
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -121,11 +124,12 @@
                       <tr>
                           <td>{{ $value->id }}</td>
                           <td>{{ $value->name }}</td>
-                          <td>{{ $value->note }}</td>
+                          <td>{{ $value->district }}</td>
                           <td>{{ $value->school_regNo }}</td>
                           <td>{{ $value->representative_name }}</td>
-                          <td>{{ $value->created_name }}</td>
-                          <td>{{ date('d-m-Y H:i A', strtotime($value->created_at)) }}</td> <!-- Corrected date format -->
+                          <td>{{ $value->representative_email }}</td>
+                          <!-- <td>{{ $value->created_name }}</td> -->
+                          <!-- <td>{{ date('d-m-Y H:i A', strtotime($value->created_at)) }}</td> Corrected date format -->
                           <td>
                               <a href="{{ url('admin/exam/edit/' .$value->id) }}" class="btn btn-primary">Edit</a>
                               <a href="{{ url('admin/exam/delete/' .$value->id) }}" class="btn btn-danger">Delete</a>
