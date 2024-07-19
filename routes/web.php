@@ -34,7 +34,7 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::get('upload', ['as' => 'pages.upload', 'uses' => 'App\Http\Controllers\PageController@icons']);
 		Route::get('schools', ['as' => 'pages.schools', 'uses' => 'App\Http\Controllers\PageController@maps']);
 		Route::get('participants', ['as' => 'pages.participants', 'uses' => 'App\Http\Controllers\PageController@notifications']);
-		Route::get('rtl', ['as' => 'pages.rtl', 'uses' => 'App\Http\Controllers\PageController@rtl']);
+		Route::get('analytics', ['as' => 'pages.analytics', 'uses' => 'App\Http\Controllers\PageController@rtl']);
 		Route::get('challenges', ['as' => 'pages.challenges', 'uses' => 'App\Http\Controllers\PageController@tables']);
 		Route::get('reps', ['as' => 'pages.reps', 'uses' => 'App\Http\Controllers\PageController@typography']);
 		Route::get('upgrade', ['as' => 'pages.upgrade', 'uses' => 'App\Http\Controllers\PageController@upgrade']);
@@ -198,4 +198,8 @@ Route::post('questions/import', [App\Http\Controllers\QuestionController::class,
 //Answers Excel documents import
 Route::post('answers/import', [App\Http\Controllers\AnswerController::class, 'importExcelAnswer'])->name('answers.import');
 
+//API End points
+Route::post('/api/attempts', [App\Http\Controllers\AttemptController::class, 'store']);
 
+//Analytics
+Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analytics'])->name('analytics');

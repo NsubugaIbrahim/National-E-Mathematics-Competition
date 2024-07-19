@@ -67,7 +67,7 @@
             </li>
             <li @if ($pageSlug == 'participants') class="active " @endif>
                 <a href="{{ route('participants') }}">
-                <i class="tim-icons icon-paper"></i>
+                <i class="tim-icons icon-single-02"></i>
                     <h4>{{ __('participants') }}</h4>
                 </a>
             </li>
@@ -83,8 +83,8 @@
                     <h4>{{ __('Generate Challenges') }}</h4>
                 </a>
             </li>
-            <li @if ($pageSlug == 'rtl') class="active " @endif>
-                <a href="{{ route('pages.rtl') }}">
+            <li @if ($pageSlug == 'analytics') class="active " @endif>
+                <a href="{{ route('analytics') }}">
                     <i class="tim-icons icon-chart-bar-32"></i>
                     <h4>{{ __('Analytics') }}</h4>
                 </a>
