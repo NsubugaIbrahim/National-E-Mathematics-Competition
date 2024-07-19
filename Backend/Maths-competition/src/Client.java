@@ -104,19 +104,63 @@ public class Client {
         }
     }
 
+    public void viewApplicants() {
+        String message = "VIEWAPPLICANTS";
+        out.println(message);
+        try {
+            Object response = objIn.readObject();
+            if (response instanceof List<?>) {
+                @SuppressWarnings("unchecked")
+                List<Participant> applicants = (List<Participant>) response;
+                if (applicants.isEmpty()) {
+                    System.out.println("No applicants available.");
+                } else {
+                    for (Participant applicant : applicants) {
+                        System.out.println("-----------------------------");
+                        System.out.println("Username: " + applicant.getUsername());
+                        System.out.println("Name: " + applicant.getFirstName() + " " + applicant.getLastName());
+                        System.out.println("Email: " + applicant.getEmail());
+                        System.out.println("School Registration Number: " + applicant.getSchoolRegNo());
+                        System.out.println("-----------------------------");
+                    }
+                }
+            } else {
+                System.out.println("Unexpected response type.");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void confirmApplicant() {
+        System.out.println("Enter confirmation (yes/no) and username:");
+        String input = scanner.nextLine();
+        String[] tokens = input.split(" ");
+        if (tokens.length == 2) {
+            String confirmation = tokens[0];
+            String username = tokens[1];
+            String message = "CONFIRM " + confirmation + " " + username;
+            out.println(message);
+        } else {
+            System.out.println("Invalid input format. Use CONFIRM yes/no username.");
+        }
+    }
+
     public static void main(String[] args) {
         try {
             Client client = new Client();
             Scanner scan = new Scanner(System.in);
 
             while (true) {
-                System.out.println("----------------------------------------------");
-                System.out.println("|> Choose an option:                          |");
-                System.out.println("|> Register to register participant details   |");
-                System.out.println("|> ViewChallenges to start the challenge      |");
-                System.out.println("|> AttemptChallenge to start the challenge    |");
-                System.out.println("|> Exit to exit                               |");
-                System.out.println("----------------------------------------------");
+                System.out.println("---------------------------------------------------");
+                System.out.println("|> Choose an option:                               |");
+                System.out.println("|> Register to register participant details        |");
+                System.out.println("|> ViewChallenges to start the challenge           |");
+                System.out.println("|> AttemptChallenge to start the challenge         |");
+                System.out.println("|> ViewApplicants to view applicant details        |");
+                System.out.println("|> ConfirmApplicant to confirm/reject an applicant |");
+                System.out.println("|> Exit to exit                                    |");
+                System.out.println("---------------------------------------------------");
                 String choice = scan.nextLine();
 
                 switch (choice) {
@@ -128,6 +172,12 @@ public class Client {
                         break;
                     case "AttemptChallenge":
                         client.attemptChallenge();
+                        break;
+                    case "ViewApplicants":
+                        client.viewApplicants();
+                        break;
+                    case "ConfirmApplicant":
+                        client.confirmApplicant();
                         break;
                     case "Exit":
                         System.exit(0);

@@ -1,15 +1,11 @@
 import java.io.*;
 import java.net.*;
-import java.sql.Connection;
 import java.sql.*;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.TimeUnit;
+import javax.mail.*;
+import javax.mail.PasswordAuthentication;
+import javax.mail.internet.*;
 
 public class Server {
     private static final int PORT = 4999;
@@ -19,6 +15,7 @@ public class Server {
     private static final int MAX_ATTEMPTS = 3;
     private Connection connection;
     //private ObjectOutputStream out = null;
+    private static final String PENDING_PARTICIPANTS_FILE = "src/pending_participants.txt";
 
     public Server() {
         try {
@@ -34,11 +31,49 @@ public class Server {
             return false;
         }
         participants.put(participant.getUsername(), participant);
-        saveParticipantToDatabase(participant);
+        saveParticipantToFile(participant); // Save participant to file
         return true;
+        /*participants.put(participant.getUsername(), participant);
+        saveParticipantToDatabase(participant);
+        return true;*/
     }
 
-    private void saveParticipantToDatabase(Participant participant) {
+    private void saveParticipantToFile(Participant participant) {
+        
+        try (FileWriter fw = new FileWriter(PENDING_PARTICIPANTS_FILE, true);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            out.println(participant.toString()); // Append participant details to file
+        } catch (IOException e) {
+            System.err.println("Error saving participant to file: " + e.getMessage());
+        }
+    }
+
+    // Method to load pending participants from file
+    private void loadPendingParticipantsFromFile() {
+        try (BufferedReader br = new BufferedReader(new FileReader(PENDING_PARTICIPANTS_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 8) {
+                    Participant participant = new Participant(
+                        parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim(),
+                        parts[4].trim(), parts[5].trim(), parts[6].trim(), parts[7].trim()
+                    );
+                    participants.put(participant.getUsername(), participant);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading pending participants from file: " + e.getMessage());
+        }
+    }
+
+    public List<Participant> getPendingParticipants() {
+       // loadPendingParticipantsFromFile(); // Load pending participants from file
+        return new ArrayList<>(participants.values());
+    }
+
+    /*private void saveParticipantToDatabase(Participant participant) {
         String sql = "INSERT INTO participant (participantId, username, firstName, lastName, email, dateOfBirth, schoolRegNo, imageFile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, participant.getParticipantId());
@@ -52,6 +87,116 @@ public class Server {
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error saving participant to database: " + e.getMessage());
+        }
+    }*/
+
+
+    /*public List<Participant> getPendingParticipants() {
+        List<Participant> pendingParticipants = new ArrayList<>();
+        String sql = "SELECT * FROM participant WHERE status IS NULL";
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Participant participant = new Participant(
+                    rs.getString("participantId"),
+                    rs.getString("username"),
+                    rs.getString("firstName"),
+                    rs.getString("lastName"),
+                    rs.getString("email"),
+                    rs.getString("dateOfBirth"),
+                    rs.getString("schoolRegNo"),
+                    rs.getString("imageFile")
+                );
+                pendingParticipants.add(participant);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving pending participants from database: " + e.getMessage());
+        }
+        return pendingParticipants;
+    }*/
+
+    public void confirmParticipant(String confirmation, String username) {
+        Participant participant = participants.get(username);
+        if (participant == null) {
+            System.err.println("Participant not found with username: " + username);
+            return;
+        }
+
+        String status = null;
+        if (confirmation.equalsIgnoreCase("yes")) {
+            status = "accepted";
+        } else if (confirmation.equalsIgnoreCase("no")) {
+            status = "rejected";
+        } else {
+            System.err.println("Invalid confirmation value. Must be 'yes' or 'no'.");
+            return;
+        }
+
+        try {
+            moveParticipantToTable(participant, status);
+            participants.remove(username); // Remove from the in-memory list after confirmation
+            sendEmail(participant, status.equals("accepted"));
+        } catch (SQLException e) {
+            System.err.println("Error confirming participant: " + e.getMessage());
+        }
+    }
+
+    private void moveParticipantToTable(Participant participant, String status) throws SQLException {
+        String insertSql;
+        if (status.equalsIgnoreCase("accepted")) {
+            insertSql = "INSERT INTO participant (participantId, username, firstName, lastName, email, dateOfBirth, schoolRegNo, imageFile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        } else {
+            insertSql = "INSERT INTO rejected (participantId, username, firstName, lastName, email, dateOfBirth, schoolRegNo, imageFile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        }
+
+        try (PreparedStatement pstmt = connection.prepareStatement(insertSql)) {
+            pstmt.setString(1, participant.getParticipantId());
+            pstmt.setString(2, participant.getUsername());
+            pstmt.setString(3, participant.getFirstName());
+            pstmt.setString(4, participant.getLastName());
+            pstmt.setString(5, participant.getEmail());
+            pstmt.setString(6, participant.getDateOfBirth());
+            pstmt.setString(7, participant.getSchoolRegNo());
+            pstmt.setString(8, participant.getImageFile());
+            pstmt.executeUpdate();
+            System.out.println("Participant moved to " + (status.equalsIgnoreCase("accepted") ? "participant" : "rejected") + " table.");
+        }
+    }
+
+    public static void sendEmail(Participant participant, boolean accepted) {
+        final String username = "tgnsystemslimited@gmail.com"; // your email
+        final String password = "anls iqfv zxwt irfq"; // your email password
+        String toEmail = participant.getEmail(); // Recipient's email address
+        String subject = accepted ? "Application Accepted" : "Application Rejected";
+        String body = "Dear " + participant.getFirstName() + ",\n\n" +
+            "Your application has been " + (accepted ? "accepted." : "rejected.") + "\n\n" +
+            "Thank you,\nMath Challenge Team";
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.googlemail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.debug", "true");
+
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
+            message.setSubject(subject);
+            message.setText(body);
+
+            Transport.send(message);
+
+            System.out.println("Email sent successfully!");
+        } catch (MessagingException e) {
+            System.err.println("Error sending email: " + e.getMessage());
         }
     }
 
@@ -221,8 +366,6 @@ public class Server {
         }
         return Username;
     }
-
-
     public static void main(String[] args) {
         Server server = new Server();
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -289,6 +432,20 @@ public class Server {
                                 server.viewChallenges(objOut, username);
                             } else {
                                 out.println("Invalid input format. Please enter username.");
+                            }
+                            break;
+                        case "VIEWAPPLICANTS":
+                            List<Participant> pendingParticipants = server.getPendingParticipants();
+                            objOut.writeObject(pendingParticipants);
+                            objOut.flush();
+                            break;
+                        case "CONFIRM":
+                            if (tokens.length == 3) {
+                                String confirmation = tokens[1];
+                                String username = tokens[2];
+                                server.confirmParticipant(confirmation, username);
+                            } else {
+                                out.println("Invalid input format. Use CONFIRM yes/no username.");
                             }
                             break;
                         default:
