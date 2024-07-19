@@ -8,6 +8,9 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\School_RepController;
+use App\Http\Controllers\ParticipantsController;
+
+
 
 Route::get('/', function () {
     return view('auth.login');
@@ -38,14 +41,14 @@ Route::group(['middleware' => 'admin'], function() {
     Route::post('/admin/admin/edit/{id}', [AdminController::class, 'update'])->name('admin.admin.update');
     Route::get('/admin/admin/delete/{id}', [AdminController::class, 'delete'])->name('admin.admin.delete');
 
-    
+
     //Participants
-    Route::get('/admin/participants/list', [School_RepController::class, 'exam_list']);
-    Route::get('/admin/participants/add', [School_RepController::class, 'exam_add']);
-    Route::post('/admin/participants/add', [School_RepController::class, 'exam_insert']);
-    Route::get('/admin/participants/edit/{id}', [School_RepController::class, 'exam_edit']); 
-    Route::post('/admin/participants/edit/{id}', [School_RepController::class, 'exam_update']);
-    Route::get('/admin/participants/delete/{id}', [School_RepController::class, 'exam_delete']);
+    Route::get('/admin/participants/list', [ParticipantsController::class, 'exam_list']);
+    Route::get('/admin/participants/add', [ParticipantsController::class, 'exam_add']);
+    Route::post('/admin/participants/add', [ParticipantsController::class, 'exam_insert']);
+    Route::get('/admin/participants/edit/{id}', [ParticipantsController::class, 'exam_edit']); 
+    Route::post('/admin/participants/edit/{id}', [ParticipantsController::class, 'exam_update']);
+    Route::get('/admin/participants/delete/{id}', [ParticipantsController::class, 'exam_delete']);
 
     // School Representatives
     Route::get('/admin/school_rep/list', [School_RepController::class, 'exam_list']);
@@ -57,12 +60,12 @@ Route::group(['middleware' => 'admin'], function() {
     
 
     // Student routes
-    Route::get('/admin/student/list', [StudentController::class, 'list'])->name('admin.student.list');
-    Route::get('/admin/student/add', [StudentController::class, 'add'])->name('admin.student.add'); 
-    Route::post('/admin/student/add', [StudentController::class, 'insert'])->name('admin.student.add_A');
-    Route::get('/admin/student/edit/{id}', [StudentController::class, 'edit'])->name('admin.student.edit'); 
-    Route::post('/admin/student/edit/{id}', [StudentController::class, 'update'])->name('admin.student.update');
-    Route::get('/admin/student/delete/{id}', [StudentController::class, 'delete'])->name('admin.student.delete');
+    // Route::get('/admin/student/list', [StudentController::class, 'list'])->name('admin.student.list');
+    // Route::get('/admin/student/add', [StudentController::class, 'add'])->name('admin.student.add'); 
+    // Route::post('/admin/student/add', [StudentController::class, 'insert'])->name('admin.student.add_A');
+    // Route::get('/admin/student/edit/{id}', [StudentController::class, 'edit'])->name('admin.student.edit'); 
+    // Route::post('/admin/student/edit/{id}', [StudentController::class, 'update'])->name('admin.student.update');
+    // Route::get('/admin/student/delete/{id}', [StudentController::class, 'delete'])->name('admin.student.delete');
 
     //School
     Route::get('/admin/school/list', [SchoolController::class, 'exam_list']);
@@ -89,5 +92,5 @@ Route::group(['middleware' => 'participant'], function() {
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/admin/admin/analytics', [App\Http\Controllers\StudentController::class, 'analytics'])->name('admin.admin.analytics');
+// Route::get('/admin/admin/analytics', [App\Http\Controllers\StudentController::class, 'analytics'])->name('admin.admin.analytics');
 

@@ -22,7 +22,7 @@ class School_RepController extends Controller
     
     public function exam_add()
     {
-        $data['header_title'] = "Add New School";
+        $data['header_title'] = "Add New Representative";
         return view('admin.school_rep.add', $data);
     }
 

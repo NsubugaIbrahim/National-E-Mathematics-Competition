@@ -76,17 +76,17 @@
 
                   <div class="form-group">
                     <label>Participant's D.O.B</label>
-                    <input type="text" class="form-control" value="{{ old('dateOfBirth')}}" name="email" required placeholder="Date Of Birth">
+                    <input type="date" class="form-control" value="{{ old('dateOfBirth')}}" name="dateOfBirth" placeholder="Date Of Birth">
                   </div>
 
                   <div class="form-group">
                     <label>School Registration No.</label>
-                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
+                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" placeholder="School RegNo">
                   </div>
 
                   <div class="form-group">
                     <label>Status</label>
-                    <input type="text" class="form-control" value="{{ old('status')}}" name="status" required placeholder="Participants Status">
+                    <input type="text" class="form-control" value="{{ old('status')}}" name="status" placeholder="Participants Status">
                   </div>
                   
                 <!-- /.card-body -->

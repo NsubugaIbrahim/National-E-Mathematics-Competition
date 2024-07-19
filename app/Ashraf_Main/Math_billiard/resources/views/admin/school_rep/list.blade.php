@@ -12,7 +12,7 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
 </head>
-<body class="hold-transition sidebar-mini">
+< class="hold-transition sidebar-mini">
 @include('layouts.header')
 
   <!-- Content Wrapper. Contains page content -->
@@ -153,7 +153,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-  @include('layouts.footer')
+ 
   <!-- Control Sidebar -->
   <aside class="control-sidebar control-sidebar-dark">
     <!-- Control sidebar content goes here -->
@@ -161,6 +161,9 @@
   <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
+</div>
+
+@include('layouts.footer')
 
 <!-- jQuery -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
