@@ -86,15 +86,12 @@ class ExaminationsController extends Controller
     public function exam_delete($id)
     {
         $getRecord = ExamModel::getSingle($id);
-        if(!empty($getRecord))
-        {
+        if (!empty($getRecord)) {
             $getRecord->is_delete = 1;
             $getRecord->save();
 
             return redirect()->back()->with('success', "School successfully deleted");
-        }
-        else
-        {
+        } else {
             abort(404);
         }
     }

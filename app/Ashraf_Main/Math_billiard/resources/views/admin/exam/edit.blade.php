@@ -52,7 +52,7 @@
                   @csrf
                   <div class="form-group">
                     <label for="name">School Name</label>
-                    <input type="text" id="name" class="form-control" value="{{ $getRecord->name }}" name="name" required placeholder="Exam Name">
+                    <input type="text" id="name" class="form-control" value="{{ $getRecord->name }}" name="name" required placeholder="School Name">
                   </div>
                   <div class="form-group">
                     <label for="district">District</label>
