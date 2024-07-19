@@ -16,13 +16,13 @@ class ExaminationsController extends Controller
     public function exam_list()
     {
         $data['getRecord'] = ExamModel::getRecord();
-        $data['header_title'] = "Exam List";
+        $data['header_title'] = "School List";
         return view('admin.exam.list', $data);
     }
     
     public function exam_add()
     {
-        $data['header_title'] = "Add New Exam";
+        $data['header_title'] = "Add New School";
         return view('admin.exam.add', $data);
     }
 
@@ -31,15 +31,19 @@ class ExaminationsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'note' => 'nullable|string|max:1000',
+            'school_regNo' => 'required|string|max:255',
+            'representative_name' => 'nullable|string|max:1000',
         ]);
 
         $exam = new ExamModel;
         $exam->name = trim($request->name);
         $exam->note = trim($request->note);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->representative_name = trim($request->representative_name);
         $exam->created_by = Auth::user()->id;
         $exam->save();
 
-        return redirect('admin/exam/list')->with('success', "Exam successfully created");
+        return redirect('admin/exam/list')->with('success', "School successfully created");
     }
 
     public function exam_edit($id)
@@ -47,7 +51,7 @@ class ExaminationsController extends Controller
         $data['getRecord'] = ExamModel::getSingle($id);
         if(!empty($data['getRecord']))
         {
-            $data['header_title'] = "Edit Exam";
+            $data['header_title'] = "Edit School";
             return view('admin.exam.edit', $data);
         }
         else
@@ -61,14 +65,18 @@ class ExaminationsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'note' => 'nullable|string|max:1000',
+            'school_regNo' => 'required|string|max:255',
+            'representative_name' => 'nullable|string|max:1000',
         ]);
 
         $exam = ExamModel::getSingle($id);
         $exam->name = trim($request->name);
         $exam->note = trim($request->note);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->representative_name = trim($request->representative_name);
         $exam->save();
 
-        return redirect('admin/exam/list')->with('success', "Exam successfully updated");
+        return redirect('admin/exam/list')->with('success', "School successfully updated");
     }
     
     public function exam_delete($id)
@@ -79,7 +87,7 @@ class ExaminationsController extends Controller
             $getRecord->is_delete = 1;
             $getRecord->save();
 
-            return redirect()->back()->with('success', "Exam successfully deleted");
+            return redirect()->back()->with('success', "School successfully deleted");
         }
         else
         {

@@ -56,7 +56,7 @@
                   </div>
                   <div class="form-group">
                     <label for="note">Address</label>
-                    <textarea id="note" class="form-control" name="note" placeholder="Note">{{ $getRecord->note }}</textarea>
+                    <input type="text" id="note" class="form-control" name="note" placeholder="Address" value="{{ $getRecord->note }}">
                   </div>
                   <div class="form-group">
                     <label for="name">School Registration No.</label>
@@ -64,7 +64,7 @@
                   </div>
                   <div class="form-group">
                     <label for="representative_name">Representative Name</label>
-                    <textarea id="representative_name" class="form-control" name="representative_name" placeholder="Representative Name">{{ $getRecord->note }}</textarea>
+                    <input type="text" id="representative_name" class="form-control" name="representative_name" placeholder="Representative Name" value="{{ $getRecord->representative_name }}">
                   </div>
                   <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Update</button>

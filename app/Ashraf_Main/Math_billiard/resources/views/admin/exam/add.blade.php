@@ -60,7 +60,15 @@
                   </div>
                   <div class="form-group">
                     <label>Address</label>
-                    <textarea class="form-control" name="note" placeholder="Note"></textarea>
+                    <input type="note" class="form-control" value="{{ old('note')}}" name="note" required placeholder="Address">
+                  </div>
+                  <div class="form-group">
+                    <label>School Registration No.</label>
+                    <input type="school_regNo" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
+                  </div>
+                  <div class="form-group">
+                    <label>Representative Name</label>
+                    <input type="representative_name" class="form-control" value="{{ old('representative_name')}}" name="representative_name" required placeholder="School Representative Name">
                   </div>
 
                 <!-- /.card-body -->
