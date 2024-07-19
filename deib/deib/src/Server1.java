@@ -12,6 +12,7 @@ public class Server1 {
         InputStreamReader M=new InputStreamReader(socket.getInputStream());
         BufferedReader K=new BufferedReader(M);
         PrintWriter PR=new PrintWriter(socket.getOutputStream());
+        while (true) { 
         String userOption=K.readLine();
         System.out.println(userOption);
         if(userOption.equals("Register")){
@@ -78,10 +79,22 @@ public class Server1 {
             PR.println(ValidationStatus);
             PR.flush();
         }//Validation loop ends here.
+        else if(userOption.equals("Login")){
+            PR.println("Login as;");
+            PR.println("Participant");
+            PR.println("SchoolRepresentative");
+            PR.flush();
+            String loginOption=K.readLine();
+            System.out.println(loginOption);
+        }//Login loop and menus in each login option end here
         else if(userOption.equals("Exit")){
             PR.println("Thank you for contacting us...");
             PR.flush();
         }//Exit loop ends here
+        else{
+            PR.println("Invalid Option");
+            PR.flush();
+        }//Invalid option ends 
        /*  FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin"); This kind of format overights the existing information in the file.
 
         byte[] buffer = new byte[1024];
@@ -101,7 +114,8 @@ public class Server1 {
             System.out.println(un);
             oos.writeObject(un);
             BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream("user_data.bin", true));*/
-    }//Main ends here.
+         }//Reptition ends here
+             }//Main ends here.
     //Method to Check database for user name in case of validation.
     public static String checkUsername(String userName) throws ClassNotFoundException{
         String result = "Not yet Validated";

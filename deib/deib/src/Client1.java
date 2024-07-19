@@ -15,6 +15,7 @@ public class Client1 {
 System.out.println("Connected To Server. Please Enter your choice");
 while(true){
     BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));{
+ System.out.println("***************************************************");
     System.out.println("MENU");
 System.out.println("Register--To Register");
 System.out.println("Validation Status --To check Validation Status");
@@ -23,7 +24,7 @@ System.out.println("Login --To Login");
 //System.out.println("Fogot Password --In case of fogotten password");
 System.out.println("Exit --To Exit");
 System.out.println("Please Enter your choice");
-
+System.out.println("****************************************************");
   String userOption = userInput.readLine();
   System.out.println(userOption);
   PR.println(userOption);
@@ -151,11 +152,27 @@ else if(userOption.equals("Validation Status")){
      System.out.println(ValidationStatus);
     // System.out.println("Please wait a moment.......");
  }// Validation loop ends here.
+ else if(userOption.equals("Login")){
+    String ll=K.readLine();
+    System.out.println(ll);
+    String pp=K.readLine();
+    System.out.println(pp);
+    String rr=K.readLine();
+    System.out.println(rr);
+    String LoginOption=userInput.readLine();
+    PR.println(LoginOption);
+    PR.flush();
+ }//Login loop and activities in that loop end here
  else if(userOption.equals("Exit")){
 String exit=K.readLine();
 System.out.println(exit);
 System.exit(0);
  }//Exit loop ends here
+ else{
+    String ii=K.readLine();
+    System.out.println(ii);
+ }//Invalid option ends here
+ 
     }//Buffered reader ends here
 }//Reptition ends
 }//Main method ends here.
