@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Simple Tables</title>
+  <title>AdminLTE 3 | School Tables</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -23,7 +23,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Add New Exam</h1>
+            <h1>Add New school</h1>
           </div>
          
         </div>
@@ -55,26 +55,14 @@
                 @endif
                 <div class="card-body">
                   <div class="form-group">
-                    <label>Exam Name</label>
+                    <label>School Name</label>
                     <input type="name" class="form-control" value="{{ old('name')}}" name="name" required placeholder="Exam Name">
                   </div>
                   <div class="form-group">
-                    <label>Note</label>
+                    <label>Address</label>
                     <textarea class="form-control" name="note" placeholder="Note"></textarea>
                   </div>
 
-                  <div class="form-group">
-                    <label>upload Questions</label>
-                    <input type="file" class="form-control" value="{{ old('questions')}}" name="questions" required >
-                  </div>
-
-                  <div class="form-group">
-                    <label>Upload Answers</label>
-                    <input type="file" class="form-control" value="{{ old('answers')}}" name="answers" required >
-                  </div>
-                  
-                  
-                  
                 <!-- /.card-body -->
 
                 <div class="card-footer">

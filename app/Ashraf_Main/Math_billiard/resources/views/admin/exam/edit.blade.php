@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Edit Exam</title>
+  <title>AdminLTE 3 | Edit School</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Edit Exam</h1>
+            <h1>Edit School</h1>
           </div>
         </div>
       </div><!-- /.container-fluid -->
@@ -51,12 +51,20 @@
                 <form method="post" action="">
                   @csrf
                   <div class="form-group">
-                    <label for="name">Exam Name</label>
+                    <label for="name">School Name</label>
                     <input type="text" id="name" class="form-control" value="{{ $getRecord->name }}" name="name" required placeholder="Exam Name">
                   </div>
                   <div class="form-group">
-                    <label for="note">Note</label>
+                    <label for="note">Address</label>
                     <textarea id="note" class="form-control" name="note" placeholder="Note">{{ $getRecord->note }}</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="name">School Registration No.</label>
+                    <input type="text" id="school_regNo" class="form-control" value="{{ $getRecord->school_regNo }}" name="school_regNo" required placeholder="School RegNo">
+                  </div>
+                  <div class="form-group">
+                    <label for="representative_name">Representative Name</label>
+                    <textarea id="representative_name" class="form-control" name="representative_name" placeholder="Representative Name">{{ $getRecord->note }}</textarea>
                   </div>
                   <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Update</button>
