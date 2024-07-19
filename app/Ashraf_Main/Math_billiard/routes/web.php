@@ -39,7 +39,13 @@ Route::group(['middleware' => 'admin'], function() {
     Route::get('/admin/admin/delete/{id}', [AdminController::class, 'delete'])->name('admin.admin.delete');
 
     
-
+    //Participants
+    Route::get('/admin/participants/list', [School_RepController::class, 'exam_list']);
+    Route::get('/admin/participants/add', [School_RepController::class, 'exam_add']);
+    Route::post('/admin/participants/add', [School_RepController::class, 'exam_insert']);
+    Route::get('/admin/participants/edit/{id}', [School_RepController::class, 'exam_edit']); 
+    Route::post('/admin/participants/edit/{id}', [School_RepController::class, 'exam_update']);
+    Route::get('/admin/participants/delete/{id}', [School_RepController::class, 'exam_delete']);
 
     // School Representatives
     Route::get('/admin/school_rep/list', [School_RepController::class, 'exam_list']);

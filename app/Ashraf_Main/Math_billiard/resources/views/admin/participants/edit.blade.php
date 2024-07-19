@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Edit School Rep.</title>
+  <title>AdminLTE 3 | Edit Participant</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Edit School Rep</h1>
+            <h1>Edit Participant</h1>
           </div>
         </div>
       </div><!-- /.container-fluid -->
@@ -51,18 +51,39 @@
                 <form method="post" action="">
                   @csrf
                   <div class="form-group">
-                    <label for="representative_name">Representative Name</label>
-                    <input type="text" id="representative_name" class="form-control" name="representative_name" placeholder="Representative Name" value="{{ $getRecord->representative_name }}">
-                  </div>
-                  <div class="form-group">
-                    <label for="representative_name">Representative Email</label>
-                    <input type="email" id="representative_email" class="form-control" name="representative_email" placeholder="Representative Email" value="{{ $getRecord->representative_email }}">
-                  </div>
-                  <div class="form-group">
-                    <label for="name">School Registration No.</label>
-                    <input type="text" id="school_regNo" class="form-control" value="{{ $getRecord->school_regNo }}" name="school_regNo" required placeholder="School RegNo">
+                    <label for="username">Participant's UserName</label>
+                    <input type="text" id="username" class="form-control" name="username" placeholder="UserName" value="{{ $getRecord->username }}">
                   </div>
                   
+                  <div class="form-group">
+                    <label for="firstName">Participant's First Name</label>
+                    <input type="text" id="firstName" class="form-control" name="firstName" placeholder="First Name" value="{{ $getRecord->firstName }}">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="lastName">Participant's Last Name</label>
+                    <input type="text" id="lastName" class="form-control" name="lastName" placeholder="Participant's Last Name" value="{{ $getRecord->lastName }}">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email">Participants Email</label>
+                    <input type="email" id="email" class="form-control" name="email" placeholder="Partcipant's Email" value="{{ $getRecord->email }}">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="dateOfBirth">Date Of Birth</label>
+                    <input type="text" id="dateOfBirth" class="form-control" name="dateOfBirth" placeholder="dateOfBirth" value="{{ $getRecord->dateOfBirth }}">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="school_regNo">School Registration No.</label>
+                    <input type="text" id="school_regNo" class="form-control" name="school_regNo" placeholder="School RegNo" value="{{ $getRecord->school_regNo }}">
+                  </div>
+                  <div class="form-group">
+                    <label for="status">Status</label>
+                    <input type="email" id="status" class="form-control" name="status" placeholder="status" value="{{ $getRecord->status }}">
+                  </div>
+                          
                   <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Update</button>
                   </div>

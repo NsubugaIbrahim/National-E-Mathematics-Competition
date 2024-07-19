@@ -208,10 +208,7 @@
         </li>
         <li class="nav-item">
           <a href="{{ url('admin/admin/list') }}" class="nav-link {{ Route::is('admin.list') ? 'active' : '' }}">
-            <span class="nav-icon-container">
-              <i class="nav-icon fas fa-user"></i>
-              <i class="nav-icon fas fa-shield-alt"></i>
-            </span>
+          <i class="fas fa-user-shield"></i>
             <p>Admin</p>
           </a>
         </li>
@@ -224,8 +221,15 @@
         </li>
 
         <li class="nav-item">
+          <a href="{{ url('admin/participants/list') }}" class="nav-link {{ Route::is('admin.participants.list') ? 'active' : '' }}">
+          <i class="fas fa-user-friends"></i>
+            <p>Participants</p>
+          </a>
+        </li> 
+
+        <li class="nav-item">
           <a href="{{ url('admin/school_rep/list') }}" class="nav-link {{ Route::is('admin.school_rep.list') ? 'active' : '' }}">
-          <i class="fas fa-user-graduate"></i>
+          <i class="fas fa-user-tie"></i>
             <p>School Representatives</p>
           </a>
         </li>        
