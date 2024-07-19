@@ -19,6 +19,8 @@ class RepresentativesviewController extends Controller
           $searchTerm = $request->input('search');
 
           $representatives = Representative::where('representativeId', 'like', "%{$searchTerm}%")
+                                  ->orWhere('schoolRegNo', 'like', "%{$searchTerm}%")
+                                  ->orWhere('representativeName', 'like', "%{$searchTerm}%")
                                   ->get(); // Adjust search criteria as needed
 
           return view('admin.representatives.viewrepresentatives', compact('representatives'));

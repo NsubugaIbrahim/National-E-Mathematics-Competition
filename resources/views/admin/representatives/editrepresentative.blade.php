@@ -18,7 +18,7 @@
                 <tr><th><h4>Registration number:</h4></th> <td><h4><input type="text" name="schoolRegNo" id="schoolRegNo" value="{{ $representative->schoolRegNo }}" required></h4></td><tr>
         </table>
         <div>
-            <button type="submit" class="btn btn-primary">Update School</button>
+            <button type="submit" class="btn btn-primary">Update Representative</button>
         </div>
     </form>
 

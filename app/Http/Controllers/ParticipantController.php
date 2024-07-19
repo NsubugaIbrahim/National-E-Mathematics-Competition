@@ -9,7 +9,7 @@ class ParticipantController extends Controller
 {
     public function viewparticipants() {
         $arr['participants'] = Participant::all(); // Fetch data
-        return view('pages.notifications')->with($arr);
+        return view('pages.participants')->with($arr);
     }
 
     //Search function
@@ -18,9 +18,11 @@ class ParticipantController extends Controller
           $searchTerm = $request->input('search');
 
           $participants = Participant::where('participantId', 'like', "%{$searchTerm}%")
+                                  ->orWhere('username', 'like', "%{$searchTerm}%")
+                                  ->orWhere('schoolRegNo', 'like', "%{$searchTerm}%")
                                   ->get(); // Adjust search criteria as needed
 
-          return view('pages.notifications', compact('participants'));
+          return view('pages.participants', compact('participants'));
         }
 
         //Edit funtion
@@ -44,19 +46,24 @@ class ParticipantController extends Controller
               }
       
               $request->validate([
-                  'username' => 'required',
-                  'firstName' => 'required',
-                  'lastName' => 'required',
-                  'email' => 'required',
-                  'dateOfBirth' => 'required',
-                  'schoolRegno' => 'required',
+                'username' => 'required',
+                'firstName' => 'required',
+                'lastName' => 'required',
+                'email' => 'required|email',
+                'dateOfBirth' => 'required|date',
               ]);
       
-              $participant->update($request->all());
-      
-              return redirect()->route('participants')->with('success', 'Participant updated successfully!');
+              try {
+                $participant->update($request->all());
+                return redirect()->route('participants')->with('success', 'Participant updated successfully!');
+            } catch (\Exception $e) {
+                // Log the error or display a custom error message
+                return back()->withErrors(['error' => $e->getMessage()]);
+            }
           }
       
+
+
           public function destroyParticipant($participantId)
               {
                   $participant = Participant::find($participantId);

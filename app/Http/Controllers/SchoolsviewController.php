@@ -19,6 +19,9 @@ class SchoolsviewController extends Controller
           $searchTerm = $request->input('search');
 
           $schools = School::where('schoolId', 'like', "%{$searchTerm}%")
+                                  ->orWhere('schoolRegNo', 'like', "%{$searchTerm}%")
+                                  ->orWhere('schoolName', 'like', "%{$searchTerm}%")
+                                  ->orWhere('district', 'like', "%{$searchTerm}%")
                                   ->get(); // Adjust search criteria as needed
 
           return view('admin.schools.viewschools', compact('schools'));

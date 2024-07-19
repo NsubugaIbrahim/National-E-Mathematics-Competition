@@ -20,4 +20,8 @@ class Participant extends Model
     
     // If your primary key is a string
     // protected $keyType = 'string';
+
+    protected $fillable = [
+        'username', 'firstName', 'lastName', 'email', 'dateOfBirth', 
+    ];
 }

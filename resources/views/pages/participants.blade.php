@@ -11,9 +11,9 @@
 </head>
 <body>
     <div class="content">  
-        <h4 class="card-title">Participants view</h4> 
+        <h2 class="card-title">Participants</h2> 
 
-        <form action="{{ route('admin.schools.search') }}" method="GET" class="form-inline mb-3">
+        <form action="{{ route('admin.participants.search') }}" method="GET" class="form-inline mb-3">
                 <div class="form-group mx-sm-3 mb-2">
                     <label for="search" class="sr-only">Search Participants</label>
                     <input type="text" class="form-control" id="search" name="search" placeholder="Search participants...">
@@ -21,9 +21,14 @@
                 <button type="submit" class="btn btn-primary mb-2">Search</button>
             </form>
 
-                      @if (session('success'))
-                            <div class="alert alert-success">{{session('success')}}</div>
-                        @endif
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+             @endif     
+            
+        </ul>
+    </div>
 
         <table class="table table-bordered table-striped">
             <thead>

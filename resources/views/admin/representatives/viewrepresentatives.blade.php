@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="content">  
-        <h4 class="card-title">Representatives table</h4> 
+        <h2 class="card-title">Representatives</h2> 
 
         <form action="{{ route('admin.representatives.search') }}" method="GET" class="form-inline mb-3">
             <div class="form-group mx-sm-3 mb-2">

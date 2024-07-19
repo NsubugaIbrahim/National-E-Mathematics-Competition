@@ -10,6 +10,23 @@
 <body>
     <h1>Edit Participant</h1>
 
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
     <form action="{{ route('admin.participants.update', $participant->participantId) }}" method="POST">
         @csrf
         <table class="table tablesorter " id="">
@@ -18,10 +35,9 @@
                 <tr><th><h4>Last Name:</h4></th> <td><h4><input type="text" name="lastName" id="lastName" value="{{ $participant->lastName }}" required></h4></td><tr>
                 <tr><th><h4>Email:</h4></th> <td><h4><input type="text" name="email" id="email" value="{{ $participant->email }}" required></h4></td><tr>
                 <tr><th><h4>Date of Birth:</h4></th> <td><h4> <input type="date" name="dateOfBirth" id="dateOfBirth" value="{{ $participant->dateOfBirth }}" required></h4></td><tr>
-                <tr><th><h4>School Registration number:</h4></th> <td><h4><input type="text" name="schoolRegNo" id="schoolRegNo" value="{{ $participant->schoolRegno }}" required></h4></td><tr>
-            </table>
+        </table>
         <div>
-            <button type="submit" class="btn btn-primary">Update School</button>
+            <button type="submit" class="btn btn-primary">Update Participant</button>
         </div>
     </form>
 
