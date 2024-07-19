@@ -1,58 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Add New Representative</title>
+  <title>AdminLTE 3 | School Tables</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
-
-  <style>
-  .btn-circle {
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    text-align: center;
-    font-size: 16px;
-  }
-
-  .btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 20px;
-    font-size: 16px;
-  }
-
-  .btn-light {
-    background-color: #f8f9fa;
-    border-color: #f8f9fa;
-    color: #000;
-  }
-
-  .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #fff;
-  }
-
-  .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: #fff;
-  }
-</style>
-
-
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
 </head>
 <body class="hold-transition sidebar-mini">
 @include('layouts.header')
@@ -64,8 +23,9 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Add New Representative</h1>
+            <h1>Add New school</h1>
           </div>
+         
         </div>
       </div><!-- /.container-fluid -->
     </section>
@@ -81,10 +41,10 @@
               
               <!-- /.card-header -->
               <!-- form start -->
-              <form method="post" action="" enctype="multipart/form-data">
+              <form method="post" action="">
               {{ csrf_field()}}
                <!-- Display Validation Errors -->
-                @if ($errors->any())
+               @if ($errors->any())
                     <div class="alert alert-danger">
                         <ul>
                             @foreach ($errors->all() as $error)
@@ -94,95 +54,62 @@
                     </div>
                 @endif
                 <div class="card-body">
-                <div class="row">
-                    <div class="form-group col-md-6">
-                        <label>First Name <span style="color: red;">*</span></label>
-                        <input type="text" class="form-control" value="{{ old('name')}}" name="name" required placeholder="First Name">
-                        <div style="color:red">{{ $errors->first('name')}}</div>
-                    </div>
-
-                    <div class="form-group col-md-6">
-                        <label>Last Name <span style="color: red;">*</span></label>
-                        <input type="text" class="form-control" value="{{ old('last_name')}}" name="last_name" required placeholder="Last Name">
-                        <div style="color:red">{{ $errors->first('last_name')}}</div>
-                    </div>
-
-                    <div class="form-group col-md-6">
-                        <label>Address<span style="color: red;">*</span></label>
-                        <input type="text" class="form-control" value="{{ old('address')}}" name="address" required placeholder="Address">
-                        <div style="color:red">{{ $errors->first('address')}}</div>
-                    </div>
-
-                                        
-                    
-
-                    <div class="form-group col-md-6">
-                        <label>Profile Pic</label>
-                        <input type="file" class="form-control" name="profile_pic">
-                    </div>
-
-
-                    
-                </div>
-                </div>
-                  
-                <div class="form-group" style="max-width: 300px; margin-left: 20px;">
-                    <label>Email <span style="color: red;">*</span></label>
-                    <input type="email" class="form-control" value="{{ old('email')}}" name="email" required placeholder="Email">
-                    <div style="color:red">{{ $errors->first('email')}}</div>
-                </div>
-                <div class="form-group" style="max-width: 300px; margin-left: 20px;">
-                    <label>Password <span style="color: red;">*</span></label>
-                    <input type="password" class="form-control" name="password" required placeholder="Password">
-                    <div style="color:red">{{ $errors->first('password')}}</div>
-                </div>
-
+                  <div class="form-group">
+                    <label>School Name</label>
+                    <input type="text" class="form-control" value="{{ old('name')}}" name="name" required placeholder="School Name">
+                  </div>
+                  <div class="form-group">
+                    <label>District</label>
+                    <input type="text" class="form-control" value="{{ old('district')}}" name="district" required placeholder="District">
+                  </div>
+                  <div class="form-group">
+                    <label>School Registration No.</label>
+                    <input type="text" class="form-control" value="{{ old('school_regNo')}}" name="school_regNo" required placeholder="School RegNo">
+                  </div>
+                  <div class="form-group">
+                    <label>Representative Name</label>
+                    <input type="text" class="form-control" value="{{ old('representative_name')}}" name="representative_name" required placeholder="School Representative Name">
+                  </div>
+                  <div class="form-group">
+                    <label>Representative Email</label>
+                    <input type="text" class="form-control" value="{{ old('representative_email')}}" name="representative_email" required placeholder="School Representative Email">
+                  </div>
 
                 <!-- /.card-body -->
-                <div class="card-footer d-flex justify-content-between">
-                <a href="javascript:history.back()" class="btn btn-light btn-circle">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div class="text-center" style="flex-grow: 1;">
-                    <button type="button" class="btn btn-warning btn-icon ml-3" onclick="document.querySelector('form').reset();">
-                    <i class="fas fa-eraser"> Clear</i>
-                    </button>
-                </div>
-                <button type="submit" class="btn btn-primary btn-icon ml-auto">
-                    <i class="fas fa-paper-plane"> Submit</i>
-                </button>
-                </div>
 
-
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
               </form>
             </div>
             <!-- /.card -->
-          </div>
+
+            
           <!--/.col (right) -->
         </div>
         <!-- /.row -->
       </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
-</div>
-<!-- /.content-wrapper -->
-@include('layouts.footer')
+  </div>
+  <!-- /.content-wrapper -->
+ @include('layouts/footer');
 
-<!-- Control Sidebar -->
-<aside class="control-sidebar control-sidebar-dark">
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
     <!-- Control sidebar content goes here -->
-</aside>
-<!-- /.control-sidebar -->
-
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
 <!-- ./wrapper -->
 
 <!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="../../plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+<script src="../../dist/js/adminlte.min.js"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/demo.js"></script>
+<script src="../../dist/js/demo.js"></script>
 </body>
 </html>

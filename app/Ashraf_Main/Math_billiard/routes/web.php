@@ -6,8 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\StudentController;
-use App\Http\Controllers\ExaminationsController;
-use App\Http\Controllers\SchooLController;
+use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\School_RepController;
 
 Route::get('/', function () {
@@ -39,15 +38,7 @@ Route::group(['middleware' => 'admin'], function() {
     Route::post('/admin/admin/edit/{id}', [AdminController::class, 'update'])->name('admin.admin.update');
     Route::get('/admin/admin/delete/{id}', [AdminController::class, 'delete'])->name('admin.admin.delete');
 
-    // School 
-    Route::get('/admin/schools/list', [SchoolController::class, 'list']);
-    Route::get('/admin/schools/add', [SchoolController::class, 'add']);
     
-    Route::get('/admin/schools/edit/{id}', [SchoolController::class, 'edit']); 
-    Route::post('/admin/schools/edit/{id}', [SchoolController::class, 'update']);
-    Route::get('/admin/schools/delete/{id}', [SchoolController::class, 'delete']);
-    Route::post('/admin/schools/add', [SchoolController::class, 'insert'])->name('insert.schools');
-
 
 
     // School Representatives
@@ -67,24 +58,17 @@ Route::group(['middleware' => 'admin'], function() {
     Route::post('/admin/student/edit/{id}', [StudentController::class, 'update'])->name('admin.student.update');
     Route::get('/admin/student/delete/{id}', [StudentController::class, 'delete'])->name('admin.student.delete');
 
-    //Examinations
-    Route::get('/admin/exam/list', [ExaminationsController::class, 'exam_list']);
-    Route::get('/admin/exam/add', [ExaminationsController::class, 'exam_add']);
-    Route::post('/admin/exam/add', [ExaminationsController::class, 'exam_insert']);
-    Route::get('/admin/exam/edit/{id}', [ExaminationsController::class, 'exam_edit']);
-    Route::post('/admin/exam/edit/{id}', [ExaminationsController::class, 'exam_update']);
-    Route::get('/admin/exam/delete/{id}', [ExaminationsController::class, 'exam_delete']);
+    //School
+    Route::get('/admin/school/list', [SchoolController::class, 'exam_list']);
+    Route::get('/admin/school/add', [SchoolController::class, 'exam_add']);
+    Route::post('/admin/school/add', [SchoolController::class, 'exam_insert']);
+    Route::get('/admin/school/edit/{id}', [SchoolController::class, 'exam_edit']);
+    Route::post('/admin/school/edit/{id}', [SchoolController::class, 'exam_update']);
+    Route::get('/admin/school/delete/{id}', [SchoolController::class, 'exam_delete']);
 
-    Route::get('/admin/exam/exam_schedule', [ExaminationsController::class, 'exam_schedule']);
+    Route::get('/admin/school/exam_schedule', [SchoolController::class, 'exam_schedule']);
     
-    // Question and Answer uploads
-    Route::get('admin/exam/upload-questions', [ExaminationsController::class, 'uploadQuestionsForm'])->name('exam.upload-questions');
-    Route::post('admin/exam/upload-questions', [ExaminationsController::class, 'uploadQuestions'])->name('exam.upload-questions');
-
-    Route::get('admin/exam/upload-answers', [ExaminationsController::class, 'uploadAnswersForm'])->name('exam.upload-answers');
-    Route::post('admin/exam/upload-answers', [ExaminationsController::class, 'uploadAnswers'])->name('exam.upload-answers');
-    Route::post('admin/exam/insert', [ExaminationsController::class, 'exam_insert'])->name('exam.insert');
-
+    
 });
 
 Route::group(['middleware' => 'school_rep'], function() {

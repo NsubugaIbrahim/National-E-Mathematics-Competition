@@ -217,7 +217,7 @@
         </li>
 
         <li class="nav-item">
-          <a href="{{ url('admin/schools/list') }}" class="nav-link {{ Route::is('admin.schools.list') ? 'active' : '' }}">
+          <a href="{{ url('admin/school/list') }}" class="nav-link {{ Route::is('admin.school.list') ? 'active' : '' }}">
           <i class="fas fa-school"></i>
             <p>Schools</p>
           </a>
@@ -269,11 +269,19 @@
           </ul>
         </li>
         <li class="nav-item">
-          <a href="{{ url('admin/exam/list') }}" class="nav-link {{ Route::is('admin.exam.list') ? 'active' : '' }}">
+          <a href="{{ url('admin/school/list') }}" class="nav-link {{ Route::is('admin.school.list') ? 'active' : '' }}">
           <i class="fas fa-school"></i>
             <p>Schools</p>
           </a>
         </li>
+
+        <li class="nav-item">
+          <a href="{{ url('admin/school_reps/list') }}" class="nav-link {{ Route::is('admin.school_reps.list') ? 'active' : '' }}">
+          <i class="fas fa-user-graduate"></i>
+            <p>School Representatives</p>
+          </a>
+        </li> 
+
         <li class="nav-item">
           <a href="{{ route('logout') }}" class="nav-link" onclick="confirmLogout(event)">
             <i class="nav-icon fas fa-arrow-circle-left"></i>

@@ -3,117 +3,97 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use App\Models\SchoolModel;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\QuestionsImport;
+use App\Imports\AnswersImport;
+// use App\Models\ClassModel;
 
 class SchoolController extends Controller
 {
-    public function list()
+    public function exam_list()
     {
-        $data['getRecord'] = User::getSchool();
-        $data['header_title'] = "Schools List";
-        return view('admin.schools.list', $data);
+        $data['getRecord'] = SchoolModel::getRecord();
+        $data['header_title'] = "School List";
+        return view('admin.school.list', $data);
+    }
+    
+    public function exam_add()
+    {
+        $data['header_title'] = "Add New School";
+        return view('admin.school.add', $data);
     }
 
-    public function add()
+    public function exam_insert(Request $request)
     {
-        $data['header_title'] = "Register new schools";
-        return view('admin.schools.add', $data);
-    }
-
-
-    public function insert(Request $request)
-    {
-         // Validate unique email, ignoring the current user's email
-         $request->validate([
-            'email' => 'required|email|max:255|unique:users,email,' . $request->id,
-            'address' => 'max:255',
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'district' => 'nullable|string|max:1000',
+            'school_regNo' => 'required|string|max:255',
+            'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
         ]);
 
-        $student = new User;
-        $student->name = trim($request->name);
-        $student->last_name = trim($request->last_name);
-      
-       
-        if (!empty($request->file('profile_pic'))) {
-            if (!empty($student->getProfile())) {
-                unlink('upload/profile/' . $student->profile_pic);
-            }
-            $ext = $request->file('profile_pic')->getClientOriginalExtension();
-            $file = $request->file('profile_pic');
-            $randomStr = date('ymdhis') . Str::random(20);
-            $filename = strtolower($randomStr) . '.' . $ext;
-            $file->move('upload/profile/', $filename);
-            $student->profile_pic = $filename;
-        }
+        $exam = new SchoolModel;
+        $exam->name = trim($request->name);
+        $exam->district = trim($request->district);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
+        $exam->created_by = Auth::user()->id;
+        $exam->save();
 
-              
-        $student->email = trim($request->email);
-        $student->password = Hash::make($request->password);
-        $student->address = trim($request->address);
-        $student->user_type = 4;
-        $student->save();
-
-        return redirect('admin/schools/list')->with('success', "{$student->name} is successfully created");
+        return redirect('admin/school/list')->with('success', "School successfully created");
     }
 
-    public function edit($id)
+    public function exam_edit($id)
     {
-        $data['getRecord'] = User::getSingle($id);
-        if (!empty($data['getRecord'])) 
-        {                       
-            $data['header_title'] = "Edit Representative";
-            return view('admin.schools.edit', $data);
-        } else {
+        $data['getRecord'] = SchoolModel::getSingle($id);
+        if(!empty($data['getRecord']))
+        {
+            $data['header_title'] = "Edit School";
+            return view('admin.school.edit', $data);
+        }
+        else
+        {
             abort(404);
         }
     }
 
-    public function update($id, Request $request)
+    public function exam_update($id, Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255|unique:users,email,' . $request->id,
-            'address' => 'max:255',
+            'name' => 'required|string|max:255',
+            'district' => 'nullable|string|max:1000',
+            'school_regNo' => 'required|string|max:255',
+            'representative_name' => 'nullable|string|max:1000',
+            'representative_email' => 'required|string|max:1000',
         ]);
 
-        $student = User::getSingle($id);
+        $exam = SchoolModel::getSingle($id);
+        $exam->name = trim($request->name);
+        $exam->district = trim($request->district);
+        $exam->school_regNo = trim($request->school_regNo);
+        $exam->representative_name = trim($request->representative_name);
+        $exam->representative_email = trim($request->representative_email);
+        $exam->save();
 
-        $student->name = trim($request->name);
-        $student->last_name = trim($request->last_name);
-        $student->email = trim($request->email);
-      
-       
-        if (!empty($request->file('profile_pic'))) {
-            if (!empty($student->getProfile())) {
-                unlink('upload/profile/' . $student->profile_pic);
-            }
-            $ext = $request->file('profile_pic')->getClientOriginalExtension();
-            $file = $request->file('profile_pic');
-            $randomStr = date('ymdhis') . Str::random(20);
-            $filename = strtolower($randomStr) . '.' . $ext;
-            $file->move('upload/profile/', $filename);
-            $student->profile_pic = $filename;
-        }
-
-              
-        if (!empty($request->password)) {
-            $student->password = Hash::make($request->password);
-        }
-
-        $student->save();
-
-        return redirect('admin/schools/list')->with('success', "{$student->name} is successfully updated");
+        return redirect('admin/school/list')->with('success', "School successfully updated");
     }
-
-    public function delete($id)
+    
+    public function exam_delete($id)
     {
-        $user = User::getSingle($id);
-        $user->is_delete = 1;
-        $user->save();
+        $getRecord = SchoolModel::getSingle($id);
+        if (!empty($getRecord)) {
+            $getRecord->is_delete = 1;
+            $getRecord->save();
 
-        return redirect('admin/schools/list')->with('success', "{$user->name} is successfully deleted");
+            return redirect()->back()->with('success', "School successfully deleted");
+        } else {
+            abort(404);
+        }
     }
+   
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Simple Tables</title>
+  <title>AdminLTE 3 | Schools</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -23,9 +23,11 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Exam Schedule </h1>
+            <h1>Schools List (Total : {{ $getRecord->total() }})</h1>
           </div>
-          
+          <div class="col-sm-6" style="text-align:right">
+            <a href="{{url('admin/school/add')}}" class="btn btn-primary">Add new school</a>
+          </div>
 
         </div>
       </div><!-- /.container-fluid -->
@@ -40,7 +42,7 @@
             <!-- general form elements -->
             <div class="card card-primary mx-2">
             <div class="card-header ">
-                <h3 class="card-title">Search Exam Schedule</h3>
+                <h3 class="card-title">Search School</h3>
               </div>
               <form method="get" action="">
                <!-- Display Validation Errors -->
@@ -59,30 +61,23 @@
 
                   
                   <div class="form-group col-md-3">
-  <label>Exam</label>
-  <select class="form-control" name="exam_id" required>
-    <option value="">Select</option>
-    @foreach ($getExam as $exam)
-      <option value="{{ $exam->id }}" {{ (Request::get('exam_id') == $exam->id) ? 'selected' : '' }}>
-        {{ $exam->name }}
-      </option>
-    @endforeach
-  </select>
-</div>
-
+                    <label>School Name</label>
+                    <input type="name" class="form-control" value="{{ Request::get('name')}}" name="name"  placeholder="School Name">
+                  </div>
 
                   <div class="form-group col-md-3">
-                    <label>Class</label>
-                    <select class="form-control" name="class_id" >
-                        <option value="">Select</option>
-                        
-                    </select>
+                    <label>District</label>
+                    <input type="district" class="form-control" value="{{ Request::get('district')}}" name="district"  placeholder="District">
                   </div>
-                  
 
+                  <div class="form-group col-md-3">
+                    <label>Representative Name</label>
+                    <input type="representative_name" class="form-control" value="{{ Request::get('representative_name')}}" name="representative_name"  placeholder="Representative Name">
+                  </div>
+                 
                   <div class="form-group col-md-3 align-self-end">
                         <button class="btn btn-success" type="submit">Search</button>
-                        <a href={{ url('admin/exam/exam_schedule')}} class="btn btn-primary">Clear</a>
+                        <a href={{ url('admin/school/list')}} class="btn btn-primary">Clear</a>
                     </div>
                        
                   </div>
@@ -104,27 +99,49 @@
         <div class="row">
           <div class="col-md-12">
             
+
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Exam Schedule</h3>
+                <h3 class="card-title">School List </h3>
               </div>
               <!-- /.card-header -->
               <div class="card-body p-0">
                 <table class="table table-striped">
                   <thead>
                     <tr>
-                      <th>Topic Name</th>
-                      <th>Date</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                      <th>Full Marks</th>
-                      <th>Passing Marks</th>
+                      <th>#</th>
+                      <th>School Name</th>
+                      <th>District</th>
+                      <th>School RegNo.</th>
+                      <th>Representative Name</th>
+                      <th>Representative Email</th>
+                      <!-- <th>Created By</th>-->
+                      <th>Action</th>
                     </tr>
                   </thead>
-                 
+                  <tbody>
+                  @foreach($getRecord as $value)
+                      <tr>
+                          <td>{{ $value->id }}</td>
+                          <td>{{ $value->name }}</td>
+                          <td>{{ $value->district }}</td>
+                          <td>{{ $value->school_regNo }}</td>
+                          <td>{{ $value->representative_name }}</td>
+                          <td>{{ $value->representative_email }}</td>
+                          <!-- <td>{{ $value->created_name }}</td> -->
+                          <!-- <td>{{ date('d-m-Y H:i A', strtotime($value->created_at)) }}</td> Corrected date format -->
+                          <td>
+                              <a href="{{ url('admin/school/edit/' .$value->id) }}" class="btn btn-primary">Edit</a>
+                              <a href="{{ url('admin/school/delete/' .$value->id) }}" class="btn btn-danger">Delete</a>
+                          </td>
+                      </tr>
+                  @endforeach
+                  </tbody>
                 </table>
 
-                
+                <div style="padding: 10px; float: right;">
+                {!! $getRecord->appends(Illuminate\Support\Facades\Request::except('page'))->links() !!}
+                <div>
 
               </div>
               <!-- /.card-body -->
