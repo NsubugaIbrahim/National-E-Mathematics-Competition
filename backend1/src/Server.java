@@ -486,12 +486,24 @@ public class server {
     
     
     private static void insertIntoDatabase(Connection connection, String tableName, String applicantDetails) {
-        String[] details = applicantDetails.split(" ");
-        // Assuming details are in the order: username firstname lastname emailAddress password date_of_birth school_reg_no image_path
-        String query = "INSERT INTO " + tableName + " (username, firstname, lastname, emailAddress, password, date_of_birth, school_reg_no, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String[] details = applicantDetails.split(",");
+        
+        // Debugging statement to print the length and content of details
+        System.out.println("Number of details: " + details.length);
+        for (int i = 0; i < details.length; i++) {
+            System.out.println("Detail " + i + ": " + details[i]);
+        }
+        
+        // Ensure that there are exactly 8 details (excluding the username)
+        if (details.length < 8) {
+            System.out.println("Insufficient details provided.");
+            return;
+        }
     
+        String query = "INSERT INTO " + tableName + " (username, firstname, lastname, email, password, date_of_birth, school_reg_no, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, details[0]);
+            pstmt.setString(1, details[0]); // Adjust index based on your format
             pstmt.setString(2, details[1]);
             pstmt.setString(3, details[2]);
             pstmt.setString(4, details[3]);
@@ -499,12 +511,13 @@ public class server {
             pstmt.setString(6, details[5]);
             pstmt.setString(7, details[6]);
             pstmt.setString(8, details[7]);
-    
+            
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    
     
 }
 
