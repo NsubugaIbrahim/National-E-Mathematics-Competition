@@ -7,8 +7,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.Scanner;
-import java.io.*;
+/*import java.util.Scanner;
+import java.io.*;*/
 import java.nio.file.*;
 
 import javax.mail.*;
@@ -23,7 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+/*import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +31,7 @@ import java.util.Scanner;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-
-
+import org.apache.pdfbox.pdmodel.font.PDType0Font;*/
 
 public class server {
     private static final String REGISTER = "Register";
@@ -42,50 +40,70 @@ public class server {
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
     private static final String IMAGE_FOLDER = "saved_images/";
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
+    private static final String EXIT = "Exit"; // Exit command
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
 
     public static void main(String[] args) throws SQLException {
         try (ServerSocket serverSocket = new ServerSocket(6666);
-        Connection connection = DriverManager.getConnection(DB_URL, USER, PASS) ) {
-            System.out.println("\n\nWelcome to the Competition!\n\n\n");
-    
+             Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
+            System.out.println("\n\nWelcome to the Competition!\n");
+
             while (true) {
                 try (Socket socket = serverSocket.accept();
                      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-    
+
                     System.out.println("Client connected...");
-                    displayMenu(out);
-    
-                    // Read client choice
+                    displayInitialMenu(out);
+
+                    String userCategory = in.readLine();
+                    System.out.println("User category selected: " + userCategory);
+
+                    if ("participant".equalsIgnoreCase(userCategory)) {
+                        displayParticipantMenu(out);
+                    } else if ("school representative".equalsIgnoreCase(userCategory)) {
+                        displayRepresentativeMenu(out);
+                    } else {
+                        out.println("Invalid user category selected.");
+                        continue;
+                    }
+
                     String clientChoice = in.readLine();
                     System.out.println("Client selected option: " + clientChoice);
-    
-                    switch (clientChoice) {
-                        case REGISTER:
-                            handleRegistration(in, out);
-                            break;
-                        case VIEW_CHALLENGES:
-                            out.println("Challenges to be viewed here...");
-                            break;
-                        case ATTEMPT_CHALLENGE:
-                            handleChallenge(in, out);
-                            break;
-                        case VIEW_APPLICANTS:
-                            handleViewApplicants(out);
-                            break;
-                        case CONFIRM_APPLICANT:
-                            handleConfirmApplicant(out, in, connection);
-                            break;
-                        
-                        default:
-                            out.println("Invalid option selected.");
+
+                    if (EXIT.equalsIgnoreCase(clientChoice)) {
+                        continue; // Return to the initial menu
                     }
-    
-                    // Display menu again after processing choice
-                    displayMenu(out);
+
+                    if ("participant".equalsIgnoreCase(userCategory)) {
+                        switch (clientChoice) {
+                            case REGISTER:
+                                handleRegistration(in, out);
+                                break;
+                            case VIEW_CHALLENGES:
+                                out.println("Challenges to be viewed here...");
+                                break;
+                            case ATTEMPT_CHALLENGE:
+                                handleChallenge(in, out);
+                                break;
+                            default:
+                                out.println("Invalid option selected.");
+                        }
+                    } else if ("school representative".equalsIgnoreCase(userCategory)) {
+                        switch (clientChoice) {
+                            case VIEW_APPLICANTS:
+                                handleViewApplicants(out);
+                                break;
+                            case CONFIRM_APPLICANT:
+                                handleConfirmApplicant(out, in, connection);
+                                break;
+                            default:
+                                out.println("Invalid option selected.");
+                        }
+                    }
+
                 } catch (IOException e) {
                     System.err.println("Error: " + e.getMessage());
                 }
@@ -94,20 +112,30 @@ public class server {
             System.err.println("Server error: " + e.getMessage());
         }
     }
-    
 
-    private static void displayMenu(PrintWriter out) {
-        out.println("Welcome to the Competition!");
-        out.println("Please select an option:");
-        out.println(REGISTER + ". Register");
-        out.println(VIEW_CHALLENGES + ". ViewChallenges");
-        out.println(ATTEMPT_CHALLENGE + ". AttemptChallenge");
-        out.println(VIEW_APPLICANTS + ". ViewApplicants");
-        out.println(CONFIRM_APPLICANT + ". ConfirmApplicant"); // New menu option
-        out.println("\nPlease enter your choice:");
+    private static void displayInitialMenu(PrintWriter out) {
+        out.println("\nWhich user category are you?\n");
+        out.println("participant");
+        out.println("school representative\n");
+        out.println("Please enter your choice:\n");
     }
-    
 
+    private static void displayParticipantMenu(PrintWriter out) {
+        out.println("Participant Menu:\n");
+        out.println("1. " + REGISTER + " - Register");
+        out.println("2. " + VIEW_CHALLENGES + " - View Challenges");
+        out.println("3. " + ATTEMPT_CHALLENGE + " - Attempt Challenge\n\n");
+        out.println("4. " + EXIT + " - Exit\n");
+        out.println("Please enter your choice:");
+    }
+
+    private static void displayRepresentativeMenu(PrintWriter out) {
+        out.println("School Representative Menu:\n");
+        out.println("1. " + VIEW_APPLICANTS + " - View Applicants");
+        out.println("2. " + CONFIRM_APPLICANT + " - Confirm Applicant\n");
+        out.println("3. " + EXIT + " - Exit\n");
+        out.println("Please enter your choice:\n\n");
+    }
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
         out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
     
