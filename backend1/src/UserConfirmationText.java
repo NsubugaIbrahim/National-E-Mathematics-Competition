@@ -8,9 +8,9 @@ import java.util.*;
 public class UserConfirmationText {
 
     private static final String USERS_FILE = "users.txt";
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/your_database";
-    private static final String DB_USER = "your_username";
-    private static final String DB_PASSWORD = "your_password";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);

@@ -1,10 +1,7 @@
-import org.json.JSONObject;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.json.JSONArray;
-import org.json.JSONTokener;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -13,20 +10,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.Scanner;
+import java.io.*;
+import java.nio.file.*;
 
 import javax.mail.*;
 import javax.mail.internet.*;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -49,14 +42,15 @@ public class server {
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
-    private static final String FILE_PATH = "registration_details.json"; // JSON file path
+    private static final String IMAGE_FOLDER = "saved_images/";
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
 
-    public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(6666)) {
+    public static void main(String[] args) throws SQLException {
+        try (ServerSocket serverSocket = new ServerSocket(6666);
+        Connection connection = DriverManager.getConnection(DB_URL, USER, PASS) ) {
             System.out.println("\n\nWelcome to the Competition!\n\n\n");
     
             while (true) {
@@ -85,8 +79,9 @@ public class server {
                             handleViewApplicants(out);
                             break;
                         case CONFIRM_APPLICANT:
-                            handleConfirmApplicant(new BufferedReader(new InputStreamReader(System.in)), out); // Use System.in for user input
+                            handleConfirmApplicant(out, in, connection);
                             break;
+                        
                         default:
                             out.println("Invalid option selected.");
                     }
@@ -117,10 +112,10 @@ public class server {
 
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
         out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
-
+    
         String registrationDetails = in.readLine();
         System.out.println("Registration details received: " + registrationDetails);
-
+    
         try {
             // Parse registration details
             String[] details = registrationDetails.split(" ");
@@ -129,52 +124,63 @@ public class server {
             String lastname = details[3];
             String email = details[4];
             String password = details[5];
-            String dob = details[6];
-            String schoolRegNo = details[7];
-            String imagePath = details[8];
-
-            // Base64 encode the image
-            String base64Image = encodeImageToBase64(imagePath);
-
-            // Create JSON object
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("username", username);
-            jsonObject.put("firstname", firstname);
-            jsonObject.put("lastname", lastname);
-            jsonObject.put("email", email);
-            jsonObject.put("password", password);
-            jsonObject.put("date_of_birth", dob);
-            jsonObject.put("school_reg_no", schoolRegNo);
-            jsonObject.put("image", base64Image);
-
-            // Write JSON object to file
-            try (FileWriter fileWriter = new FileWriter(FILE_PATH, true)) {
-                fileWriter.write(jsonObject.toString());
-                fileWriter.write("\n"); // Add newline for each entry
-                System.out.println("Registration details saved to " + FILE_PATH);
+            String date_of_birth = details[6];
+            String school_reg_no = details[7];
+            String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+    
+            // Ensure the folder exists
+            File folder = new File(IMAGE_FOLDER);
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+    
+            // Define the new image path
+            Path sourcePath = Paths.get(image_path);
+            Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
+            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+    
+            // Create a string with registration details
+            String registrationEntry = String.join(",",
+                username,
+                firstname,
+                lastname,
+                email,
+                password,
+                date_of_birth,
+                school_reg_no,
+                destinationPath.toString()
+            );
+    
+            // Write registration details to text file
+            try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
+                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                 PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
+                printWriter.println(registrationEntry);
+                System.out.println("Registration details saved to registration_details.txt");
             } catch (IOException e) {
                 e.printStackTrace();
                 out.println("Registration failed. Please try again.");
                 return;
             }
-
+    
             // Send email confirmation
-            sendEmail(email, username, firstname, lastname, dob);
-
+            sendEmail(email, username, firstname, lastname, date_of_birth);
+    
             out.println("Registration successful!");
         } catch (Exception e) {
             e.printStackTrace();
             out.println("Registration failed. Please try again.");
         }
     }
+    
 
     private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
-        List<Question> challengeQuestions = getRandomQuestions(10);
+        List<Questions> challengeQuestions = getRandomQuestions(10);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
-        Map<Question, String> userAnswers = new HashMap<>();
+        Map<Questions, String> userAnswers = new HashMap<>();
         int totalMarks = 0;
     
-        for (Question question : challengeQuestions) {
+        for (Questions question : challengeQuestions) {
             // Send question text to client
             out.println("Question: " + question.getQuestionText());
             out.flush(); // Ensure the question is sent immediately
@@ -202,8 +208,8 @@ public class server {
     }
     
 
-    public static List<Question> getRandomQuestions(int numberOfQuestions) {
-        List<Question> questions = new ArrayList<>();
+    public static List<Questions> getRandomQuestions(int numberOfQuestions) {
+        List<Questions> questions = new ArrayList<>();
         String query = "SELECT questionid, questionText FROM questions ORDER BY RAND() LIMIT ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -215,7 +221,7 @@ public class server {
             while (rs.next()) {
                 int questionId = rs.getInt("questionid");
                 String questionText = rs.getString("questionText");
-                questions.add(new Question(questionId, questionText));
+                questions.add(new Questions(questionId, questionText));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -223,7 +229,7 @@ public class server {
         return questions;
     }
 
-    public static Map<Integer, String> getCorrectAnswers(List<Question> questions) {
+    public static Map<Integer, String> getCorrectAnswers(List<Questions> questions) {
         Map<Integer, String> answers = new HashMap<>();
         String query = "SELECT questionId, answer FROM answers WHERE questionId IN (";
         StringBuilder queryBuilder = new StringBuilder(query);
@@ -255,7 +261,7 @@ public class server {
         return answers;
     }
 
-    public static void generatePDFReport(Map<Question, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks, int totalQuestions) {
+    public static void generatePDFReport(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks, int totalQuestions) {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
         document.addPage(page);
@@ -274,8 +280,8 @@ public class server {
                 contentStream.setFont(customFont, 12);
                 contentStream.newLine();
 
-                for (Map.Entry<Question, String> entry : userAnswers.entrySet()) {
-                    Question question = entry.getKey();
+                for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+                    Questions question = entry.getKey();
                     String userAnswer = entry.getValue();
                     String correctAnswer = correctAnswers.get(question.getQuestionId());
 
@@ -305,31 +311,33 @@ public class server {
     }
 
     private static void handleViewApplicants(PrintWriter out) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
-            String line;
-            int applicantNumber = 1;
-
-            while ((line = reader.readLine()) != null) {
-                JSONObject applicant = new JSONObject(new JSONTokener(line));
-                out.println("Applicant " + applicantNumber + ":");
-                out.println("Username: " + getJsonString(applicant, "username"));
-                out.println("First Name: " + getJsonString(applicant, "firstname"));
-                out.println("Last Name: " + getJsonString(applicant, "lastname"));
-                out.println("Email: " + getJsonString(applicant, "email"));
-                out.println("Date of Birth: " + getJsonString(applicant, "date_of_birth"));
-                out.println("School Registration Number: " + getJsonString(applicant, "school_reg_no"));
-                out.println("Image (Base64): " + getJsonString(applicant, "image"));
-                out.println("------------------------");
-                applicantNumber++;
+        try {
+            File file = new File("registration_details.txt");
+    
+            if (!file.exists()) {
+                out.println("No applicants registered yet.");
+                out.flush(); // Ensure the message is sent immediately
+                return;
             }
-        } catch (IOException e) {
-            out.println("Error reading applicants: " + e.getMessage());
+    
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    out.println(line);
+                }
+                out.flush(); // Ensure all lines are sent immediately
+            } catch (IOException e) {
+                e.printStackTrace();
+                out.println("Failed to read applicants. Please try again.");
+                out.flush(); // Ensure the error message is sent immediately
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.println("An error occurred while retrieving applicants.");
+            out.flush(); // Ensure the error message is sent immediately
         }
     }
-
-    private static String getJsonString(JSONObject jsonObject, String key) {
-        return jsonObject.has(key) ? jsonObject.getString(key) : "N/A";
-    }
+    
 
     private static void sendEmail(String recipientEmail, String username, String firstname, String lastname, String dob) {
         // Sender's email ID needs to be mentioned
@@ -389,137 +397,112 @@ public class server {
         }
     }
 
-    private static String encodeImageToBase64(String imagePath) {
-        String base64Image = "";
+    private static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
         try {
-            System.out.println("Reading image from path: " + imagePath);
-            File file = new File(imagePath);
-            BufferedImage image = ImageIO.read(file);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", baos);
-            byte[] imageBytes = baos.toByteArray();
-            base64Image = Base64.getEncoder().encodeToString(imageBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return base64Image;
-    }
-
-    private static void handleConfirmApplicant(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please confirm applicant by typing: confirm yes [username]");
-        out.flush(); // Ensure prompt is displayed immediately
+            out.println("\nPlease enter your choice (confirm yes <username> or confirm no <username>):");
+            out.flush(); // Ensure the prompt is sent immediately
     
-        String confirmationRequest = in.readLine(); // Wait for user input
+            // Read the user input
+            String command = in.readLine();
+            if (command == null || command.isEmpty()) {
+                out.println("Invalid input. Please try again.");
+                out.flush();
+                return;
+            }
     
-        // Parse the command
-        String[] commandParts = confirmationRequest.split(" ");
-        if (commandParts.length == 3 && commandParts[0].equals("confirm") && commandParts[1].equals("yes")) {
-            String usernameToConfirm = commandParts[2];
+            // Split the command to extract action and username
+            String[] parts = command.split(" ");
+            if (parts.length != 3 || (!parts[1].equals("yes") && !parts[1].equals("no"))) {
+                out.println("Invalid command format. Use: confirm yes <username> or confirm no <username>");
+                out.flush();
+                return;
+            }
     
-            // Read from registration_details.json and find the applicant
-            JSONArray applicants = readApplicantsFromFile();
-            JSONArray updatedApplicants = new JSONArray();
+            String action = parts[1];
+            String username = parts[2];
     
-            boolean found = false;
-            for (int i = 0; i < applicants.length(); i++) {
-                JSONObject applicant = applicants.getJSONObject(i);
-                String username = applicant.getString("username");
+            File inputFile = new File("registration_details.txt");
+            File tempFile = new File("registration_details_temp.txt");
     
-                if (username.equals(usernameToConfirm)) {
-                    // Save applicant details to database
-                    saveToDatabase(applicant);
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
     
-                    // Notify confirmation
-                    out.println("Applicant " + usernameToConfirm + " confirmed and details saved to database.");
-                    out.flush(); // Ensure message is displayed immediately
+                String currentLine;
+                boolean userFound = false;
+                String applicantDetails = null;
     
-                    // Remove from JSON file
-                    found = true;
-                } else {
-                    updatedApplicants.put(applicant);
+                // Read each line from the input file
+                while ((currentLine = reader.readLine()) != null) {
+                    if (currentLine.contains(username)) {
+                        applicantDetails = currentLine;
+                        userFound = true;
+                        // Skip writing the found line to the temp file (effectively removing it)
+                        continue;
+                    }
+                    // Write all lines except the found applicant's details to the temp file
+                    writer.write(currentLine + System.lineSeparator());
                 }
-            }
     
-            if (!found) {
-                out.println("Applicant not found.");
-                out.flush(); // Ensure message is displayed immediately
-            } else {
-                // Write updated applicants back to file
-                writeApplicantsToFile(updatedApplicants);
+                if (!userFound) {
+                    out.println("Applicant not found.");
+                    out.flush();
+                    return;
+                }
+    
+                // Insert the applicant details into the database
+                if (applicantDetails != null) {
+                    if (action.equals("yes")) {
+                        insertIntoDatabase(connection, "participants", applicantDetails);
+                        out.println("Applicant confirmed and added to participants.");
+                    } else if (action.equals("no")) {
+                        insertIntoDatabase(connection, "rejected", applicantDetails);
+                        out.println("Applicant rejected and added to rejected.");
+                    }
+                    out.flush();
+                }
+    
+                // Replace the original file with the updated temp file
+                if (!inputFile.delete()) {
+                    out.println("Failed to delete the original file.");
+                    out.flush();
+                    return;
+                }
+                if (!tempFile.renameTo(inputFile)) {
+                    out.println("Failed to rename the temp file.");
+                    out.flush();
+                    return;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                out.println("Failed to process the applicant. Please try again.");
+                out.flush();
             }
-        } else {
-            out.println("Invalid confirmation command. Please use format: confirm yes [username]");
-            out.flush(); // Ensure message is displayed immediately
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.println("An error occurred while confirming the applicant.");
+            out.flush();
         }
     }
     
     
+    private static void insertIntoDatabase(Connection connection, String tableName, String applicantDetails) {
+        String[] details = applicantDetails.split(" ");
+        // Assuming details are in the order: username firstname lastname emailAddress password date_of_birth school_reg_no image_path
+        String query = "INSERT INTO " + tableName + " (username, firstname, lastname, emailAddress, password, date_of_birth, school_reg_no, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, details[0]);
+            pstmt.setString(2, details[1]);
+            pstmt.setString(3, details[2]);
+            pstmt.setString(4, details[3]);
+            pstmt.setString(5, details[4]);
+            pstmt.setString(6, details[5]);
+            pstmt.setString(7, details[6]);
+            pstmt.setString(8, details[7]);
     
-    private static JSONArray readApplicantsFromFile() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
-            StringBuilder jsonString = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonString.append(line);
-                jsonString.append("\n");
-            }
-            return new JSONArray(jsonString.toString());
-        }
-    }
-    
-    private static void writeApplicantsToFile(JSONArray applicants) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            writer.write(applicants.toString());
-            writer.newLine();
-        }
-    }
-    
-    private static void saveToDatabase(JSONObject applicant) {
-        String url = "jdbc:mysql://localhost:3306/mathchallenge"; // Replace with your database URL
-        String username = "root"; // Replace with your database username
-        String password = ""; // Replace with your database password
-    
-        Connection conn = null;
-        PreparedStatement stmt = null;
-    
-        try {
-            // Connect to the database
-            conn = DriverManager.getConnection(url, username, password);
-    
-            // SQL query to insert applicant details into 'participants' table
-            String sql = "INSERT INTO participants (username, firstname, lastname, email, password, date_of_birth, school_reg_no, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
-            // Prepare the statement with the SQL query
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, applicant.getString("username"));
-            stmt.setString(2, applicant.getString("firstname"));
-            stmt.setString(3, applicant.getString("lastname"));
-            stmt.setString(4, applicant.getString("email"));
-            stmt.setString(5, applicant.getString("password"));
-            stmt.setString(6, applicant.getString("date_of_birth"));
-            stmt.setString(7, applicant.getString("school_reg_no"));
-            stmt.setString(8, applicant.getString("image"));
-    
-            // Execute the insert statement
-            int rowsInserted = stmt.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("A new participant was inserted successfully!");
-            }
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            // Close resources in a finally block to ensure they're always closed
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
     

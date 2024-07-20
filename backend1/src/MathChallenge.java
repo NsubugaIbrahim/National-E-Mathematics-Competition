@@ -21,13 +21,13 @@ public class MathChallenge {
     private static final String PASS = "";
 
     public static void main(String[] args) {
-        List<Question> challengeQuestions = getRandomQuestions(10);
+        List<Questions> challengeQuestions = getRandomQuestions(10);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
-        Map<Question, String> userAnswers = new HashMap<>();
+        Map<Questions, String> userAnswers = new HashMap<>();
         Scanner scanner = new Scanner(System.in);
         int totalMarks = 0;
 
-        for (Question question : challengeQuestions) {
+        for (Questions question : challengeQuestions) {
             System.out.println(question.getQuestionText());
             String answer = scanner.nextLine().trim();
             userAnswers.put(question, answer);
@@ -49,8 +49,8 @@ public class MathChallenge {
         generatePDFReport(userAnswers, correctAnswers, totalMarks, challengeQuestions.size());
     }
 
-    public static List<Question> getRandomQuestions(int numberOfQuestions) {
-        List<Question> questions = new ArrayList<>();
+    public static List<Questions> getRandomQuestions(int numberOfQuestions) {
+        List<Questions> questions = new ArrayList<>();
         String query = "SELECT questionid, questionText FROM questions ORDER BY RAND() LIMIT ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -62,7 +62,7 @@ public class MathChallenge {
             while (rs.next()) {
                 int questionId = rs.getInt("questionid");
                 String questionText = rs.getString("questionText");
-                questions.add(new Question(questionId, questionText));
+                questions.add(new Questions(questionId, questionText));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -70,7 +70,7 @@ public class MathChallenge {
         return questions;
     }
 
-    public static Map<Integer, String> getCorrectAnswers(List<Question> questions) {
+    public static Map<Integer, String> getCorrectAnswers(List<Questions> questions) {
         Map<Integer, String> answers = new HashMap<>();
         String query = "SELECT questionId, answer FROM answers WHERE questionId IN (";
         StringBuilder queryBuilder = new StringBuilder(query);
@@ -102,7 +102,7 @@ public class MathChallenge {
         return answers;
     }
 
-    public static void generatePDFReport(Map<Question, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks, int totalQuestions) {
+    public static void generatePDFReport(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks, int totalQuestions) {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
         document.addPage(page);
@@ -121,8 +121,8 @@ public class MathChallenge {
                 contentStream.setFont(customFont, 12);
                 contentStream.newLine();
 
-                for (Map.Entry<Question, String> entry : userAnswers.entrySet()) {
-                    Question question = entry.getKey();
+                for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+                    Questions question = entry.getKey();
                     String userAnswer = entry.getValue();
                     String correctAnswer = correctAnswers.get(question.getQuestionId());
 

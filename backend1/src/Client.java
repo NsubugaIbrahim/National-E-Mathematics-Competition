@@ -12,6 +12,8 @@ public class client {
             while ((serverResponse = in.readLine()) != null) {
                 System.out.println(serverResponse);
                 if (serverResponse.contains("Please enter your choice:") || 
+                    serverResponse.contains("Question: ") ||
+                    serverResponse.contains("Please enter your choice (confirm yes <username> or confirm no <username>):") ||
                     serverResponse.contains("Please enter your details in the format:") ||
                     serverResponse.contains("Please enter two numbers separated by a space to add:")) {
                     String userChoice = userInput.readLine();
