@@ -47,6 +47,7 @@ public class MathChallenge {
         
         // Generate PDF report
         generatePDFReport(userAnswers, correctAnswers, totalMarks, challengeQuestions.size());
+        
     }
 
     public static List<Questions> getRandomQuestions(int numberOfQuestions) {
