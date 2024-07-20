@@ -38,7 +38,7 @@
                 @foreach($schools as $c)
                 <tr>
                     <td><a href="{{ route('school.details', $c->schoolId) }}">{{$c->schoolId}}</a></td>
-                    <td>{{$c->schoolRegNo}}</td>
+                    <td><a href="{{ route('school.details', $c->schoolId) }}">{{$c->schoolRegNo}}</a></td>
                     <td>{{$c->schoolName}}</td>
                     <td>{{$c->district}}</td>
                     <td>

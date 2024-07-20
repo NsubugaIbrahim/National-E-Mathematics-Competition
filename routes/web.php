@@ -203,3 +203,15 @@ Route::post('/api/attempts', [App\Http\Controllers\AttemptController::class, 'st
 
 //Analytics
 Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analytics'])->name('analytics');
+
+
+//Schools template page
+Route::get('/school/{schoolRegno}', function ($schoolRegno) {
+	$school = School::where('schoolId', $schoolId)->first();
+  
+	if (!$school) {
+	  return abort(404); // Handle non-existent school
+	}
+  
+	return view('school-details', compact('school')); // Render school-details.blade.php with data
+  })->name('school.details');
