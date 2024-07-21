@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('score');
             $table->integer('correctAnswers');
             $table->integer('totalQuestions');
+            $table->boolean('completed');
             $table->timestamp('receivedAt');
             $table->timestamps();
         });

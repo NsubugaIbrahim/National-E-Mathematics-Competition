@@ -83,12 +83,14 @@ class AnalyticsController extends Controller
                 ->get();
 
 
-        $incompleteChallenges = DB::table('participants')
-                ->leftJoin('attempts', 'participants.participantId', '=', 'attempts.participantId')
-                ->select('participants.participantId', 'participants.username', DB::raw('COUNT(attempts.attemptId) as total_attempts'))
+            $incompleteChallenges = DB::table('participants')
+                ->leftJoin('results', 'participants.participantId', '=', 'results.participantId')
+                ->select('participants.participantId', 'participants.username', DB::raw('COUNT(results.resultId) as incomplete_challenges'))
+                ->where('results.completed', false)
                 ->groupBy('participants.participantId', 'participants.username')
-                ->having('total_attempts', '<', DB::raw('(SELECT COUNT(questionId) FROM questions)'))
+                ->orderBy('incomplete_challenges', 'desc')
                 ->get();
+            
 
                 return view('pages.analytics', compact(
                     'mostCorrectlyAnsweredQuestions',

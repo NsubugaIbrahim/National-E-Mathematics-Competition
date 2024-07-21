@@ -200,7 +200,7 @@
                                     <th><h5>#</h5></th>
                                     <th><h5>Participant ID</h5></th>
                                     <th><h5>Username</h5></th>
-                                    <th><h5>Total Attempts</h5></th>                               
+                                    <th><h5>Number of Incomplete Challenges</h5></th>                               
                                 </tr>
                             </thead>
                             <tbody>
@@ -208,7 +208,7 @@
                                 <tr>
                                     <td>{{ $participant->participantId }}</td>
                                     <td>{{ $participant->username }}</td>
-                                    <td>{{ $participant->total_attempts }}</td>
+                                    <td>{{ $participant->incomplete_challenges }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
