@@ -7,10 +7,16 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 /*import java.util.Scanner;
 import java.io.*;*/
 import java.nio.file.*;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 
@@ -23,6 +29,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.activation.DataSource;
 /*import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,7 +151,15 @@ public class server {
     
         try {
             // Parse registration details
-            String[] details = registrationDetails.split(" ");
+        String[] details = registrationDetails.split(" ");
+        if (details.length < 9) {
+            out.println("Invalid input format. Please provide all required details.");
+            return;
+        }
+
+
+            // Parse registration details
+           // String[] details = registrationDetails.split(" ");
             String username = details[1];
             String firstname = details[2];
             String lastname = details[3];
@@ -154,6 +169,13 @@ public class server {
             String school_reg_no = details[7];
             String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
     
+            // Validate image file path
+            Path sourcePath = Paths.get(image_path);
+            if (!Files.exists(sourcePath)) {
+                out.println("Image file does not exist. Registration failed.");
+                return;
+            }
+
             // Ensure the folder exists
             File folder = new File(IMAGE_FOLDER);
             if (!folder.exists()) {
@@ -161,7 +183,7 @@ public class server {
             }
     
             // Define the new image path
-            Path sourcePath = Paths.get(image_path);
+            //Path sourcePath = Paths.get(image_path);
             Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
     
@@ -201,39 +223,161 @@ public class server {
     
 
     private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         List<Questions> challengeQuestions = getRandomQuestions(10);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Questions, String> userAnswers = new HashMap<>();
-        int totalMarks = 0;
-    
-        for (Questions question : challengeQuestions) {
-            // Send question text to client
-            out.println("Question: " + question.getQuestionText());
-            out.flush(); // Ensure the question is sent immediately
-    
-            // Receive answer from client
-            String answer = in.readLine().trim();
-            userAnswers.put(question, answer);
-    
-            // Check answer correctness
-            if (correctAnswers.containsKey(question.getQuestionId()) &&
-                correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
-                totalMarks++;
-                out.println("Correct!");
-            } else {
-                out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
+        long startTime = System.currentTimeMillis();
+        long challengeDuration = TimeUnit.MINUTES.toMillis(1);
+
+        // Schedule a task to stop the challenge after the duration
+        Future<?> future = executor.schedule(() -> {
+            out.println("Time's up! Sending the marking guide...");
+            out.flush();
+            sendMarkingGuide(userAnswers, correctAnswers);
+        }, challengeDuration, TimeUnit.MILLISECONDS);
+
+        try {
+            for (Questions question : challengeQuestions) {
+                // Check if time is up
+                if (System.currentTimeMillis() - startTime >= challengeDuration) {
+                    break;
+                }
+
+                // Send question text to client
+                out.println("Question: " + question.getQuestionText());
+                out.flush(); // Ensure the question is sent immediately
+
+                // Receive answer from client with timeout
+                String answer = in.readLine().trim();
+                userAnswers.put(question, answer);
+
+                // Check answer correctness
+                if (correctAnswers.containsKey(question.getQuestionId()) &&
+                    correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
+                    out.println("Correct!");
+                } else {
+                    out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
+                }
+                out.flush(); // Ensure response is sent immediately
             }
-            out.flush(); // Ensure response is sent immediately
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            executor.shutdownNow(); // Stop the timer task if it hasn't executed yet
+            future.cancel(true); // Cancel the scheduled task if it's still pending
         }
-    
-        out.println("You scored: " + totalMarks + " out of " + challengeQuestions.size());
-        out.flush(); // Ensure the final score is sent immediately
-    
-        // Generate PDF report
-        generatePDFReport(userAnswers, correctAnswers, totalMarks, challengeQuestions.size());
+
+        // Send the marking guide after the challenge is over
+        sendMarkingGuide(userAnswers, correctAnswers);
     }
     
+    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers) {
+        int totalMarks = 0;
+        for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+            Questions question = entry.getKey();
+            String userAnswer = entry.getValue();
+            if (correctAnswers.containsKey(question.getQuestionId()) &&
+                correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(userAnswer)) {
+                totalMarks++;
+            }
+        }
 
+        // Create PDF marking guide
+        try {
+            createPdfMarkingGuide(userAnswers, correctAnswers, totalMarks);
+            sendEmailWithAttachment("kayiwarahim@gmail.com", "Marking Guide", "Please find your marking guide attached.", "marking_guide.pdf");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void createPdfMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
+                contentStream.beginText();
+                contentStream.setFont(customFont, 12);
+                contentStream.setLeading(14.5f);
+                contentStream.newLineAtOffset(25, 700);
+
+                contentStream.showText("Marking Guide");
+                contentStream.newLine();
+                contentStream.newLine();
+                contentStream.showText("Total Marks: " + totalMarks);
+                contentStream.newLine();
+
+                int questionNumber = 1;
+                for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+                    Questions question = entry.getKey();
+                    String userAnswer = entry.getValue();
+                    String correctAnswer = correctAnswers.get(question.getQuestionId());
+
+                    contentStream.showText("Question        " + questionNumber + ": " + question.getQuestionText());
+                    contentStream.newLine();
+                    contentStream.showText("Your Answer:    " + userAnswer);
+                    contentStream.newLine();
+                    contentStream.showText("Correct Answer: " + correctAnswer);
+                    contentStream.newLine();
+                    contentStream.newLine();
+
+                    questionNumber++;
+                }
+
+                
+
+                contentStream.endText();
+            }
+
+            document.save("marking_guide.pdf");
+        }
+    }
+
+    private static void sendEmailWithAttachment(String to, String subject, String body, String filePath) {
+        String from = "tgnsystemslimited@gmail.com";
+        String host = "smtp.gmail.com";
+
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true"); // For Gmail
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", "587"); // Port for TLS/STARTTLS
+    
+
+        Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(from, "mpdl ahwd lrkg xuqr"); // Replace with your email password
+            }
+        });
+
+        try {
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            message.setSubject(subject);
+
+            BodyPart messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText(body);
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(messageBodyPart);
+
+            messageBodyPart = new MimeBodyPart();
+            DataSource source = new FileDataSource(filePath);
+            messageBodyPart.setDataHandler(new DataHandler(source));
+            messageBodyPart.setFileName(filePath);
+            multipart.addBodyPart(messageBodyPart);
+
+            message.setContent(multipart);
+            Transport.send(message);
+            System.out.println("Email with attachment sent successfully!");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
     public static List<Questions> getRandomQuestions(int numberOfQuestions) {
         List<Questions> questions = new ArrayList<>();
         String query = "SELECT questionid, questionText FROM questions ORDER BY RAND() LIMIT ?";
@@ -365,63 +509,65 @@ public class server {
     }
     
 
-    private static void sendEmail(String recipientEmail, String username, String firstname, String lastname, String dob) {
-        // Sender's email ID needs to be mentioned
-        String from = "tgnsystemslimited@gmail.com";
+    private static void sendEmail(String recipientEmail, String username, String firstname, String lastname, String dob) throws UnsupportedEncodingException{
+        // Sender's email ID and name
+        String fromEmail = "tgnsystemslimited@gmail.com";
+        String senderName = "National-E-Mathematics-Competition";
         final String usernameEmail = "tgnsystemslimited@gmail.com"; // sender's email ID
         final String password = "mpdl ahwd lrkg xuqr"; // sender's password
-
-        // Assuming you are sending email through relay.jangosmtp.net
+    
+        // Assuming you are sending email through smtp.gmail.com
         String host = "smtp.gmail.com";
-
+    
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", "587");
-
+    
         // Get the Session object
         Session session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(usernameEmail, password);
             }
         });
-
+    
         try {
             // Create a default MimeMessage object
             Message message = new MimeMessage(session);
-
-            // Set From: header field of the header
-            message.setFrom(new InternetAddress(from));
-
+    
+            // Set From: header field of the header with sender's name
+            message.setFrom(new InternetAddress(fromEmail, senderName ));
+    
             // Set To: header field of the header
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
-
+    
             // Set Subject: header field
-            message.setSubject("Registration Details successfully Sent ");
-
+            message.setSubject("Registration Details Successfully Sent");
+    
             // Now set the actual message
             String emailContent = "Dear " + firstname + " " + lastname + ",\n\n";
             emailContent += "Your registration details have been successfully received and are under review.\n";
             emailContent += "Username: " + username + "\n";
-            emailContent += "firstname: " + firstname + "\n ";
-            emailContent += "lastname: " + lastname + "\n" ;
+            emailContent += "Firstname: " + firstname + "\n";
+            emailContent += "Lastname: " + lastname + "\n";
             emailContent += "Date of Birth: " + dob + "\n";
             emailContent += "Please keep this email for future reference.\n\n";
             emailContent += "You will be receiving an email once your registration is approved.\n\n";
-            emailContent += "Thank you for registering with for the natinal E mathemactics Competition.";
-
+            emailContent += "Thank you for registering for the National E-Mathematics Competition.";
+    
             message.setText(emailContent);
-
+    
             // Send message
             Transport.send(message);
-
+    
             System.out.println("Sent message successfully....");
-
+    
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }
     }
+    
 
     private static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
         try {
@@ -475,14 +621,19 @@ public class server {
                     return;
                 }
     
+                // Extract email address from applicantDetails
+                String emailAddress = applicantDetails.split(",")[3]; // Assuming emailAddress is in the 4th position
+    
                 // Insert the applicant details into the database
                 if (applicantDetails != null) {
                     if (action.equals("yes")) {
                         insertIntoDatabase(connection, "participants", applicantDetails);
                         out.println("Applicant confirmed and added to participants.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations! Your application has been accepted.");
                     } else if (action.equals("no")) {
                         insertIntoDatabase(connection, "rejected", applicantDetails);
                         out.println("Applicant rejected and added to rejected.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "We regret to inform you that your application has been rejected.");
                     }
                     out.flush();
                 }
@@ -510,6 +661,39 @@ public class server {
         }
     }
     
+    private static void sendEmailConfirmation(String toAddress, String subject, String body)throws UnsupportedEncodingException {
+        final String fromAddress = "tgnsystemslimited@gmail.com"; // Replace with your email
+        String senderName = "National-E-Mathematics-Competition";
+        final String username = "tgnsystemslimited@gmail.com"; // Replace with your email username
+        final String password = "mpdl ahwd lrkg xuqr"; // Replace with your email password
+    
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", "smtp.gmail.com"); // Replace with your SMTP server
+        properties.put("mail.smtp.port", "587"); // Replace with your SMTP port
+    
+        Session session = Session.getInstance(properties, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+    
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromAddress, senderName ));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress));
+            message.setSubject(subject);
+            message.setText(body);
+    
+            Transport.send(message);
+            System.out.println("Email sent successfully.");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            System.out.println("Failed to send email.");
+        }
+    }
     
     private static void insertIntoDatabase(Connection connection, String tableName, String applicantDetails) {
         String[] details = applicantDetails.split(",");
