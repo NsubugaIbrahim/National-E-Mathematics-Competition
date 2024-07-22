@@ -36,7 +36,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-public class server {
+public class Server {
     private static final String REGISTER = "Register";
     private static final String LOGIN = "Login"; // New command
     private static final String VIEW_CHALLENGES = "ViewChallenges";
