@@ -17,7 +17,7 @@ class School extends Model
 
     // If your primary key is not named 'id', you should disable the auto-incrementing behavior
     public $incrementing = false;
-    public $timestamps = false; // Disable the automatic timestamps
+    // public $timestamps = false; // Disable the automatic timestamps
     
     // If your primary key is a string
     // protected $keyType = 'string';

@@ -1,0 +1,3 @@
+srahman,ssebuliba,Rahman,ssebulibaabdulrahman@gmail.com,Admin@1234,2003-03-26,U2381,saved_images\julian.jpg
+srahman,ssebuliba,Rahman,ssebulibaabdulrahman@gmail.com,Admin@1234,2003-03-26,U2381,saved_images\julian.jpg
+typa,Walusimbi,Ashraf,ashrafwalusimbi364@gmail.com,Qwerty@1234,2003-11-26,23/U/18466/EVE,saved_images\julian.jpg

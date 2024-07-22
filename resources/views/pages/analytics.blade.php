@@ -63,6 +63,7 @@
             <div class="card ">
                 <div class="table-responsive">
                     <table border ='1'class="table tablesorter" id="serial">
+                        
                         <thead>
                             <tr> 
                                 <th><h5>#</h5></th>
@@ -88,6 +89,12 @@
             <div class="card ">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="serial">
+                    <style>
+                        .blue-background {
+                            background-color: brown;
+                            color: white; /* Optional: to make the text readable */
+                        }
+                    </style>
                         <thead>
                             <tr>
                                 <th><h5>#</h5></th>
@@ -117,6 +124,12 @@
                 <div class="card ">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped" id="serial">
+                        <style>
+                            .blue-background {
+                                background-color: brown;
+                                color: white; /* Optional: to make the text readable */
+                            }
+                        </style>
                             <thead>
                                 <tr>
                                     <th><h5>#</h5></th>
@@ -145,6 +158,12 @@
                 <div class="card ">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped" id="serial">
+                        <style>
+                            .blue-background {
+                                background-color: brown;
+                                color: white; /* Optional: to make the text readable */
+                            }
+                        </style>
                             <thead>
                                 <tr>
                                     <th><h5>#</h5></th>
@@ -170,6 +189,12 @@
                 <div class="card ">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped" id="serial">
+                        <style>
+                            .blue-background {
+                                background-color: brown;
+                                color: white; /* Optional: to make the text readable */
+                            }
+                        </style>
                             <thead>
                                 <tr>
                                     <th><h5>#</h5></th>
@@ -195,14 +220,22 @@
                 <div class="card ">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped" id="serial">
-                            <thead>
-                                <tr>
-                                    <th><h5>#</h5></th>
-                                    <th><h5>Participant ID</h5></th>
-                                    <th><h5>Username</h5></th>
-                                    <th><h5>Number of Incomplete Challenges</h5></th>                               
-                                </tr>
-                            </thead>
+<style>
+    .blue-background {
+        background-color: brown;
+        color: white; /* Optional: to make the text readable */
+    }
+</style>
+
+<thead>
+    <tr class="blue-background">
+        <th><h5>#</h5></th>
+        <th><h5>Participant ID</h5></th>
+        <th><h5>Username</h5></th>
+        <th><h5>Number of Incomplete Challenges</h5></th>
+    </tr>
+</thead>
+
                             <tbody>
                                 @foreach($incompleteChallenges as $participant)
                                 <tr>

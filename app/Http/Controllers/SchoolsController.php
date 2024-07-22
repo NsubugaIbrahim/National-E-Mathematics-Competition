@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PDO; //import PDO
 
 class SchoolsController extends Controller
@@ -31,5 +32,15 @@ class SchoolsController extends Controller
           return redirect()->back()->with('status', 'School(s) successfully registered');
         }
       }
-      
+
+      public function schoolsAddedOverTime()
+{
+    $schools = DB::table('schools')
+        ->select(DB::raw('YEARWEEK(created_at, 1) as week'), DB::raw('COUNT(*) as count'))
+        ->groupBy('week')
+        ->orderBy('week', 'asc')
+        ->get();
+
+    return view('dashboard', compact('schools'));
+}
 }
