@@ -14,6 +14,8 @@ public class client {
                 if (serverResponse.contains("Please enter your choice:") || 
                     serverResponse.contains("Question: ") ||
                     serverResponse.contains("Please enter your choice (confirm yes <username> or confirm no <username>):") ||
+                    serverResponse.contains("Enter your username:") ||
+                    serverResponse.contains("Enter your password:") ||
                     serverResponse.contains("Please enter your details in the format:") ||
                     serverResponse.contains("Please enter two numbers separated by a space to add:")) {
                     String userChoice = userInput.readLine();

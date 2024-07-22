@@ -11,8 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-/*import java.util.Scanner;
-import java.io.*;*/
 import java.nio.file.*;
 
 import javax.activation.DataHandler;
@@ -30,18 +28,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
-/*import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;*/
 
 public class server {
     private static final String REGISTER = "Register";
+    private static final String LOGIN = "Login"; // New command
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
@@ -51,6 +41,7 @@ public class server {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
+    private static String loggedInEmail;
 
     public static void main(String[] args) throws SQLException {
         try (ServerSocket serverSocket = new ServerSocket(6666);
@@ -89,11 +80,8 @@ public class server {
                             case REGISTER:
                                 handleRegistration(in, out);
                                 break;
-                            case VIEW_CHALLENGES:
-                                out.println("Challenges to be viewed here...");
-                                break;
-                            case ATTEMPT_CHALLENGE:
-                                handleChallenge(in, out);
+                            case LOGIN:
+                                handleLogin(in, out, connection);
                                 break;
                             default:
                                 out.println("Invalid option selected.");
@@ -119,7 +107,6 @@ public class server {
             System.err.println("Server error: " + e.getMessage());
         }
     }
-
     private static void displayInitialMenu(PrintWriter out) {
         out.println("\nWhich user category are you?\n");
         out.println("participant");
@@ -130,9 +117,16 @@ public class server {
     private static void displayParticipantMenu(PrintWriter out) {
         out.println("Participant Menu:\n");
         out.println("1. " + REGISTER + " - Register");
-        out.println("2. " + VIEW_CHALLENGES + " - View Challenges");
-        out.println("3. " + ATTEMPT_CHALLENGE + " - Attempt Challenge\n\n");
-        out.println("4. " + EXIT + " - Exit\n");
+        out.println("2. " + LOGIN + " - Login\n");
+        out.println("3. " + EXIT + " - Exit\n");
+        out.println("Please enter your choice:");
+    }
+
+    private static void displayParticipantLoggedInMenu(PrintWriter out) {
+        out.println("Participant Menu (Logged In):\n");
+        out.println("1. " + VIEW_CHALLENGES + " - View Challenges");
+        out.println("2. " + ATTEMPT_CHALLENGE + " - Attempt Challenge\n\n");
+        out.println("3. " + EXIT + " - Exit\n");
         out.println("Please enter your choice:");
     }
 
@@ -143,6 +137,72 @@ public class server {
         out.println("3. " + EXIT + " - Exit\n");
         out.println("Please enter your choice:\n\n");
     }
+
+    private static void handleLogin(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        out.println("Enter your username:");
+        String username = in.readLine();
+        out.println("Enter your password:");
+        String password = in.readLine();
+
+        boolean isAuthenticated = authenticate(username, password, connection);
+
+        if (isAuthenticated) {
+            loggedInEmail = getEmailByUsername(username, connection); // Store the email of the logged-in participant
+            out.println("Login successful!");
+            displayParticipantLoggedInMenu(out);
+
+            String clientChoice = in.readLine();
+            System.out.println("Client selected option: " + clientChoice);
+
+            switch (clientChoice) {
+                case VIEW_CHALLENGES:
+                    out.println("Challenges to be viewed here...");
+                    break;
+                case ATTEMPT_CHALLENGE:
+                    handleChallenge(in, out);
+                    break;
+                case EXIT:
+                    // Do nothing, will return to the initial menu
+                    break;
+                default:
+                    out.println("Invalid option selected.");
+            }
+        } else {
+            out.println("Login failed. Invalid username or password.");
+        }
+    }
+
+    private static boolean authenticate(String username, String password, Connection connection) {
+        String query = "SELECT COUNT(*) FROM participants WHERE username = ? AND password = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Authentication error: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private static String getEmailByUsername(String username, Connection connection) {
+        String query = "SELECT email FROM participants WHERE username = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("email");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving email: " + e.getMessage());
+        }
+        return "";
+    }
+
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
         out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
     
@@ -234,7 +294,7 @@ public class server {
         Future<?> future = executor.schedule(() -> {
             out.println("Time's up! Sending the marking guide...");
             out.flush();
-            sendMarkingGuide(userAnswers, correctAnswers);
+            sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
         }, challengeDuration, TimeUnit.MILLISECONDS);
 
         try {
@@ -269,10 +329,10 @@ public class server {
         }
 
         // Send the marking guide after the challenge is over
-        sendMarkingGuide(userAnswers, correctAnswers);
+        sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
     }
     
-    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers) {
+    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, String email) {
         int totalMarks = 0;
         for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
             Questions question = entry.getKey();
@@ -286,7 +346,7 @@ public class server {
         // Create PDF marking guide
         try {
             createPdfMarkingGuide(userAnswers, correctAnswers, totalMarks);
-            sendEmailWithAttachment("kayiwarahim@gmail.com", "Marking Guide", "Please find your marking guide attached.", "marking_guide.pdf");
+            sendEmailWithAttachment(email, "Marking Guide", "Please find your marking guide attached.", "marking_guide.pdf");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -327,8 +387,6 @@ public class server {
                     questionNumber++;
                 }
 
-                
-
                 contentStream.endText();
             }
 
@@ -336,9 +394,10 @@ public class server {
         }
     }
 
-    private static void sendEmailWithAttachment(String to, String subject, String body, String filePath) {
+    private static void sendEmailWithAttachment(String to, String subject, String body, String filePath) throws UnsupportedEncodingException {
         String from = "tgnsystemslimited@gmail.com";
         String host = "smtp.gmail.com";
+        String senderName = "National-E-Mathematics-Competition";
 
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
@@ -355,7 +414,7 @@ public class server {
 
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));
+            message.setFrom(new InternetAddress(from, senderName));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             message.setSubject(subject);
 
@@ -537,7 +596,7 @@ public class server {
             Message message = new MimeMessage(session);
     
             // Set From: header field of the header with sender's name
-            message.setFrom(new InternetAddress(fromEmail, senderName ));
+            message.setFrom(new InternetAddress(fromEmail, senderName));
     
             // Set To: header field of the header
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
