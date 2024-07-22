@@ -12,6 +12,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.nio.file.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -28,6 +30,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
+import java.io.*;
+import java.nio.file.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class server {
     private static final String REGISTER = "Register";
@@ -173,17 +180,25 @@ public class server {
     }
 
     private static boolean authenticate(String username, String password, Connection connection) {
+        String encryptedPassword;
+        try {
+            encryptedPassword = encryptPassword(password);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
+    
         String query = "SELECT COUNT(*) FROM participants WHERE username = ? AND password = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, password);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0;
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.setString(2, encryptedPassword);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Authentication error: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -204,82 +219,87 @@ public class server {
     }
 
     private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
-    
-        String registrationDetails = in.readLine();
-        System.out.println("Registration details received: " + registrationDetails);
-    
-        try {
-            // Parse registration details
+    out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
+
+    String registrationDetails = in.readLine();
+    System.out.println("Registration details received: " + registrationDetails);
+
+    try {
+        // Parse registration details
         String[] details = registrationDetails.split(" ");
         if (details.length < 9) {
             out.println("Invalid input format. Please provide all required details.");
             return;
         }
 
+        String username = details[1];
+        String firstname = details[2];
+        String lastname = details[3];
+        String email = details[4];
+        String password = details[5];
+        String date_of_birth = details[6];
+        String school_reg_no = details[7];
+        String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
 
-            // Parse registration details
-           // String[] details = registrationDetails.split(" ");
-            String username = details[1];
-            String firstname = details[2];
-            String lastname = details[3];
-            String email = details[4];
-            String password = details[5];
-            String date_of_birth = details[6];
-            String school_reg_no = details[7];
-            String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
-    
-            // Validate image file path
-            Path sourcePath = Paths.get(image_path);
-            if (!Files.exists(sourcePath)) {
-                out.println("Image file does not exist. Registration failed.");
-                return;
-            }
+        // Validate image file path
+        Path sourcePath = Paths.get(image_path);
+        if (!Files.exists(sourcePath)) {
+            out.println("Image file does not exist. Registration failed.");
+            return;
+        }
 
-            // Ensure the folder exists
-            File folder = new File(IMAGE_FOLDER);
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-    
-            // Define the new image path
-            //Path sourcePath = Paths.get(image_path);
-            Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
-            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-    
-            // Create a string with registration details
-            String registrationEntry = String.join(",",
-                username,
-                firstname,
-                lastname,
-                email,
-                password,
-                date_of_birth,
-                school_reg_no,
-                destinationPath.toString()
-            );
-    
-            // Write registration details to text file
-            try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
-                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                 PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
-                printWriter.println(registrationEntry);
-                System.out.println("Registration details saved to registration_details.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-                out.println("Registration failed. Please try again.");
-                return;
-            }
-    
-            // Send email confirmation
-            sendEmail(email, username, firstname, lastname, date_of_birth);
-    
-            out.println("Registration successful!");
-        } catch (Exception e) {
+        // Ensure the folder exists
+        File folder = new File(IMAGE_FOLDER);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
+        // Define the new image path
+        Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
+        Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Encrypt the password
+        String encryptedPassword = encryptPassword(password);
+
+        // Create a string with registration details
+        String registrationEntry = String.join(",",
+            username,
+            firstname,
+            lastname,
+            email,
+            encryptedPassword,
+            date_of_birth,
+            school_reg_no,
+            destinationPath.toString()
+        );
+
+        // Write registration details to text file
+        try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+             PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
+            printWriter.println(registrationEntry);
+            System.out.println("Registration details saved to registration_details.txt");
+        } catch (IOException e) {
             e.printStackTrace();
             out.println("Registration failed. Please try again.");
+            return;
         }
+
+        // Send email confirmation
+        sendEmail(email, username, firstname, lastname, date_of_birth);
+
+        out.println("Registration successful!");
+    } catch (Exception e) {
+        e.printStackTrace();
+        out.println("Registration failed. Please try again.");
     }
+}
+
+private static String encryptPassword(String password) throws NoSuchAlgorithmException {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] hash = md.digest(password.getBytes());
+    return Base64.getEncoder().encodeToString(hash);
+}
     
 
     private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
