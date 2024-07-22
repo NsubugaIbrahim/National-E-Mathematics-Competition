@@ -1,6 +1,17 @@
-import java.io.*;
-import java.net.*;
-import java.sql.*;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 public class Server1 {
     public static void main(String[] args) throws IOException,ClassNotFoundException {
         ServerSocket serverSocket = new ServerSocket(2003);
@@ -9,6 +20,7 @@ public class Server1 {
         System.out.println("Client connected.");
        // InputStream clientInput =new InputStreamReader(socket.getInputStream());
         //BufferedReader K=new BufferedReader(ClientInput);
+        
         InputStreamReader M=new InputStreamReader(socket.getInputStream());
         BufferedReader K=new BufferedReader(M);
         PrintWriter PR=new PrintWriter(socket.getOutputStream());
@@ -86,6 +98,12 @@ public class Server1 {
             PR.flush();
             String loginOption=K.readLine();
             System.out.println(loginOption);
+            if (loginOption.equals("Participant")){
+
+            }//Participant Menu.
+            else if (loginOption.equals("SchoolRepresentative")){
+
+            }//SchoolRepresentative menu.
         }//Login loop and menus in each login option end here
         else if(userOption.equals("Exit")){
             PR.println("Thank you for contacting us...");
