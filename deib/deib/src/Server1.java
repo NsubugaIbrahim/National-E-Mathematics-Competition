@@ -1,185 +1,157 @@
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+
 public class Server1 {
-    public static void main(String[] args) throws IOException,ClassNotFoundException {
-        ServerSocket serverSocket = new ServerSocket(2003);
-        System.out.println("Server started. Waiting for client connection...");
-        Socket socket = serverSocket.accept();
-        System.out.println("Client connected.");
-       // InputStream clientInput =new InputStreamReader(socket.getInputStream());
-        //BufferedReader K=new BufferedReader(ClientInput);
-        
-        InputStreamReader M=new InputStreamReader(socket.getInputStream());
-        BufferedReader K=new BufferedReader(M);
-        PrintWriter PR=new PrintWriter(socket.getOutputStream());
-        while (true) { 
-        String userOption=K.readLine();
-        System.out.println(userOption);
-        if(userOption.equals("Register")){
-            PR.println("Your information is being captured");
-            PR.flush();
-            PrintStream PS=new PrintStream(new FileOutputStream("Participant_data.bin", true));
-            String un=K.readLine();
-            System.out.println(un);
-            PS.print("userName: ");
-            PS.print(un);
-            PS.print(", ");
-            String fn=K.readLine();
-            System.out.println(fn);
-            PS.print("firstName:");
-            PS.print(fn);
-            PS.print(", ");
-            String ln=K.readLine();
-            System.out.println(ln);
-            PS.print("lastName: ");
-            PS.print(ln);
-            PS.print(", ");
-            String mail=K.readLine();
-            System.out.println(mail);
-            PS.print("emailAddress: ");
-            PS.print(mail);
-            PS.print(", ");
-            String DOB=K.readLine();
-            System.out.println(DOB);
-            PS.print("dateOfBirth: ");
-            PS.print(DOB);
-            PS.print(", ");
-            String SchholReg=K.readLine();
-            System.out.println(SchholReg);
-            PS.print("schoolRegistrationNumber: ");
-            PS.print(SchholReg);
-            PS.print(", ");
-            String ep=K.readLine();
-            System.out.println(ep);
-            PS.print("password: ");
-            PS.print(ep);
-            PS.print(", ");
-            InputStream imageInput=socket.getInputStream();
-            FileOutputStream fop=new FileOutputStream("Participant_data.bin", true);
-            byte[] buffer=new byte[5242880];
-            int bytesRead;
-            while((bytesRead=imageInput.read(buffer)) !=-1){
-                fop.write(buffer, 0, bytesRead);
-            }
-            imageInput.close();
-            fop.close();       
-        }//Registration loop.
-        else if(userOption.equals("Validation Status")){
-            PR.println("Please enter your user name");
-            PR.flush();
-            String userName=K.readLine();
-            System.out.println(userName);
-            PR.println("Checking files. Please wait...");
-            PR.flush();
-            String ss=K.readLine();
-            System.out.println(ss);
-            //Checking the database for login status
-            System.out.println(checkUsername(userName));
-            String ValidationStatus=checkUsername(userName);
-            PR.println(ValidationStatus);
-            PR.flush();
-        }//Validation loop ends here.
-        else if(userOption.equals("Login")){
-            PR.println("Login as;");
-            PR.println("Participant");
-            PR.println("SchoolRepresentative");
-            PR.flush();
-            String loginOption=K.readLine();
-            System.out.println(loginOption);
-            if (loginOption.equals("Participant")){
+    public static void main(String[] args)throws IOException,ClassNotFoundException, SQLException {
+        ServerSocket serverSocket = null;
+        Socket socket = null;
+        BufferedReader K = null;
+        PrintWriter PR = null;
 
-            }//Participant Menu.
-            else if (loginOption.equals("SchoolRepresentative")){
-
-            }//SchoolRepresentative menu.
-        }//Login loop and menus in each login option end here
-        else if(userOption.equals("Exit")){
-            PR.println("Thank you for contacting us...");
-            PR.flush();
-        }//Exit loop ends here
-        else{
-            PR.println("Invalid Option");
-            PR.flush();
-        }//Invalid option ends 
-       /*  FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin"); This kind of format overights the existing information in the file.
-
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            fileOutputStream.write(buffer, 0, bytesRead);
-        }
-
-        fileOutputStream.close();
-        socket.close();
-        serverSocket.close();
-
-        System.out.println("Data stored in file: " + new File("user_data.bin").getAbsolutePath());
-         FileOutputStream fileOutputStream = new FileOutputStream("user_data.bin", true); 
-            ObjectOutputStream oos=new ObjectOutputStream(fileOutputStream);
-            String un=K.readLine();
-            System.out.println(un);
-            oos.writeObject(un);
-            BufferedOutputStream bos=new BufferedOutputStream(new FileOutputStream("user_data.bin", true));*/
-         }//Reptition ends here
-             }//Main ends here.
-    //Method to Check database for user name in case of validation.
-    public static String checkUsername(String userName) throws ClassNotFoundException{
-        String result = "Not yet Validated";
-        Connection conn = null;
         try {
-            // Load the database driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            serverSocket = new ServerSocket(2003);
+            System.out.println("Server started. Waiting for client connection...");
+            socket = serverSocket.accept();
+            System.out.println("Client connected.");
 
-            // Establish a connection to the database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
+            K = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PR = new PrintWriter(socket.getOutputStream(), true);
 
-            // Create a statement to execute the query
-            Statement stmt = conn.createStatement();
+            String userOption;
 
-            // Query the accepted table
-            ResultSet acceptedResultSet = stmt.executeQuery("SELECT * FROM accepted WHERE userName='" + userName + "'");
+            while ((userOption = K.readLine()) != null) {
+                System.out.println("Received option from client: " + userOption);
 
-            // Check if the username exists in the accepted table
-            if (acceptedResultSet.next()) {
-                result = "accepted";
-            } else {
-                // Query the rejected table
-                ResultSet rejectedResultSet = stmt.executeQuery("SELECT * FROM rejected WHERE username='" + userName + "'");
-                // Check if the username exists in the rejected table
-                if (rejectedResultSet.next()) {
-                    result = "rejected";
-                }/*else{
-                    result="Not yet validated";
-                }*/
-            }
+                if (userOption.equals("Register")) {
+                    PR.println("Your information is being captured");
 
-            // Close the statement and connection
-            stmt.close();
-            conn.close();
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    System.out.println("Error: " + e.getMessage());
+                    // Read user details
+                    String un = K.readLine();
+                    System.out.println("Username: " + un);
+                    // Capture to file or database
+                    // Example: Capture to a file
+                    FileOutputStream fop = new FileOutputStream("Participant_data.bin", true);
+                    fop.write(("userName: " + un + ", ").getBytes());
+
+                    // Close the file output stream
+                    fop.close();
+                    
+                    // Continue capturing other details...
+                } else if (userOption.equals("Validation Status")) {
+                    PR.println("Please enter your user name");
+                    String userName = K.readLine();
+                    System.out.println("Username for validation: " + userName);
+
+                    // Check validation status
+                    String validationStatus = checkUsername(userName);
+                    PR.println(validationStatus);
+                } else if (userOption.equals("Login")) {
+                    PR.println("Login as;");
+                    PR.println("Participant");
+                    PR.println("SchoolRepresentative");
+
+                    String loginOption = K.readLine();
+                    System.out.println("Login option: " + loginOption);
+
+                    if (loginOption.equals("Participant")) {
+                        // Handle participant login
+                    } else if (loginOption.equals("SchoolRepresentative")) {
+                        // Handle school representative login
+                    }
+                } else if (userOption.equals("Exit")) {
+                    PR.println("Thank you for contacting us...");
+                    break;  // Exit the loop
+                } else {
+                    PR.println("Invalid Option");
                 }
             }
+        } catch (IOException e) {
+            System.err.println("Error in server: " + e.getMessage());
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error: MySQL JDBC Driver not found");
+            e.printStackTrace();
+        } finally {
+            try {
+                // Close all resources
+                if (K != null) K.close();
+                if (PR != null) PR.close();
+                if (socket != null) socket.close();
+                if (serverSocket != null) serverSocket.close();
+            } catch (IOException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
-        return result;
+    }
+    // Method to validate username
+public static String checkUsername(String userName)throws ClassNotFoundException, SQLException {
+    String result = "Not yet Validated";
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+    ResultSet acceptedResultSet = null;
+    ResultSet rejectedResultSet = null;
+
+    try {
+        // Load the database driver
+        Class.forName("com.mysql.cj.jdbc.Driver");
+
+        // Establish a connection to the database
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
+
+        // Query the accepted table
+        String acceptedQuery = "SELECT * FROM accepted WHERE userName=?";
+        pstmt = conn.prepareStatement(acceptedQuery);
+        pstmt.setString(1, userName);
+        acceptedResultSet = pstmt.executeQuery();
+
+        // Check if the username exists in the accepted table
+        if (acceptedResultSet.next()) {
+            result = "Accepted";
+        } else {
+            // Query the rejected table
+            String rejectedQuery = "SELECT * FROM rejected WHERE username=?";
+            pstmt = conn.prepareStatement(rejectedQuery);
+            pstmt.setString(1, userName);
+            rejectedResultSet = pstmt.executeQuery();
+
+            // Check if the username exists in the rejected table
+            if (rejectedResultSet.next()) {
+                result = "Rejected";
+            } else {
+                // If not found in either table, set result to "Not yet Validated"
+                result = "Not yet Validated";
+            }
+        }
+    } catch (ClassNotFoundException | SQLException e) {
+        // Handle exceptions
+        e.printStackTrace();
+    } finally {
+        // Close result sets
+        try {
+            if (acceptedResultSet != null) acceptedResultSet.close();
+            if (rejectedResultSet != null) rejectedResultSet.close();
+            // Close prepared statement
+            if (pstmt != null) pstmt.close();
+            // Close connection
+            if (conn != null) conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    return result;
+}
 }
