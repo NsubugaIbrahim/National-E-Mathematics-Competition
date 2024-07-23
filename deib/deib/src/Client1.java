@@ -1,7 +1,16 @@
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 public class Client1 {
     public static void main(String []args) throws IOException{
@@ -162,6 +171,22 @@ else if(userOption.equals("Validation Status")){
     String LoginOption=userInput.readLine();
     PR.println(LoginOption);
     PR.flush();
+    if(LoginOption.equals("Participant")){
+    String pl=K.readLine();
+    System.out.println(pl);
+    System.out.println("Enter your username");
+    String userName=userInput.readLine();
+    System.out.println("Enter your password");
+    String password=userInput.readLine();
+    PR.println(userName);
+    PR.println(password);
+    PR.flush();
+    String loginValidation=K.readLine();
+    System.out.println(loginValidation);
+    }//participant loop ends here.
+    else if(LoginOption.equals("SchoolRepresentative")){
+
+    }//School Representative loop ends here.
  }//Login loop and activities in that loop end here
  else if(userOption.equals("Exit")){
 String exit=K.readLine();

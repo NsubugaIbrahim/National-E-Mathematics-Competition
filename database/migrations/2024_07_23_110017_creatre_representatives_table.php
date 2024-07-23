@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('representatives', function (Blueprint $table) {
-            $table->id("representativeId");
-            $table->string("representativeName");
-            $table->string("representativeEmail")->unique();
-            $table->string("schoolRegNo");
-        });
+        $table->id("representativeId");
+        $table->string("representativeName");
+        $table->string("representativeEmail")->unique();
+        $table->string("schoolRegNo");
+        $table->string("password");
+        $table->timestamps();
+    });
     }
 
     /**
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('representatives');
+        //
     }
 };

@@ -10,8 +10,18 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+//import java.sql.*;
 public class Server1 {
+    private Connection conn;
+    public Server1(){
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
+System.out.println("Successful database connections");
+        }catch(ClassNotFoundException | SQLException e){
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args)throws IOException,ClassNotFoundException, SQLException {
         ServerSocket serverSocket = null;
         Socket socket = null;
@@ -61,13 +71,35 @@ public class Server1 {
                     PR.println("SchoolRepresentative");
 
                     String loginOption = K.readLine();
-                    System.out.println("Login option: " + loginOption);
+                    System.out.println("Login option as: " + loginOption);
 
                     if (loginOption.equals("Participant")) {
-                        // Handle participant login
-                    } else if (loginOption.equals("SchoolRepresentative")) {
-                        // Handle school representative login
-                    }
+                        PR.println("Please enter your username and Password");
+                        PR.flush();
+                        String userName=K.readLine();
+                        String password=K.readLine();
+                        System.out.println(userName);
+                        System.out.println(password);
+                         // Call method to check login
+                         LoginResult result = checkLogin(userName, password);
+
+                         switch (result) {
+                             case VALID:
+                                 System.out.println("Welcome to the system, " + userName + "!");
+                                 break;
+                             case INVALID_CREDENTIALS:
+                                 System.out.println("Invalid password. Please try again.");
+                                 break;
+                             case USER_NOT_FOUND:
+                                 System.out.println("User not found. Please register or check your username.");
+                                 break;
+                         }
+                         PR.println(result);
+                         PR.flush();
+                    }//Handle Participant login.
+                     else if (loginOption.equals("SchoolRepresentative")) {
+
+                    }//Handle SchoolRepresentative
                 } else if (userOption.equals("Exit")) {
                     PR.println("Thank you for contacting us...");
                     break;  // Exit the loop
@@ -95,7 +127,7 @@ public class Server1 {
                 System.err.println("Error closing resources: " + e.getMessage());
             }
         }
-    }
+    }// Main method ends here.
     // Method to validate username
 public static String checkUsername(String userName)throws ClassNotFoundException, SQLException {
     String result = "Not yet Validated";
@@ -106,7 +138,7 @@ public static String checkUsername(String userName)throws ClassNotFoundException
 
     try {
         // Load the database driver
-        Class.forName("com.mysql.cj.jdbc.Driver");
+       Class.forName("com.mysql.cj.jdbc.Driver");
 
         // Establish a connection to the database
         conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
@@ -135,7 +167,7 @@ public static String checkUsername(String userName)throws ClassNotFoundException
                 result = "Not yet Validated";
             }
         }
-    } catch (ClassNotFoundException | SQLException e) {
+    }  catch (ClassNotFoundException | SQLException e) {
         // Handle exceptions
         e.printStackTrace();
     } finally {
@@ -153,5 +185,59 @@ public static String checkUsername(String userName)throws ClassNotFoundException
     }
 
     return result;
+}
+//Participant validation method starts here
+private static LoginResult checkLogin(String userName, String password) throws SQLException {
+    Connection conn = null;
+    PreparedStatement statement = null;
+    ResultSet resultSet = null;
+    LoginResult loginResult = LoginResult.USER_NOT_FOUND;
+
+    try {
+        // Establish a connection to the database
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        conn= DriverManager.getConnection("jdbc:mysql://localhost:3306/julian", "root", "");
+
+        // Prepare a statement to execute SQL queries
+        String sql = "SELECT * FROM users WHERE userName = ?";
+        statement = conn.prepareStatement(sql);
+        statement.setString(1, userName);
+
+        // Execute the query
+        resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            // User exists, check password
+            String storedPassword = resultSet.getString("password");
+            if (password.equals(storedPassword)) {
+                loginResult = LoginResult.VALID;
+            } else {
+                loginResult = LoginResult.INVALID_CREDENTIALS;
+            }
+        }
+
+    }  catch (ClassNotFoundException | SQLException e) {
+        // Handle exceptions
+        e.printStackTrace();
+    } finally {
+        // Close connections
+        if (resultSet != null) {
+            resultSet.close();
+        }
+        if (statement != null) {
+            statement.close();
+        }
+        if (conn != null) {
+            conn.close();
+        }
+    }
+
+    return loginResult;
+}
+
+private enum LoginResult {
+    VALID,
+    INVALID_CREDENTIALS,
+    USER_NOT_FOUND
 }
 }
