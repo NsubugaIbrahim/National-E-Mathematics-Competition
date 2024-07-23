@@ -2,7 +2,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.bouncycastle.asn1.cmp.Challenge;
+
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -47,7 +47,6 @@ public class Server {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
-    private static Connection connection = null;
     private static String loggedInEmail;
 
     public static void main(String[] args) throws SQLException {
@@ -324,14 +323,14 @@ public class Server {
     private static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
         out.flush();
-
+    
         String command = in.readLine().trim();
         if (!command.startsWith("AttemptChallenge")) {
             out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
             out.flush();
             return;
         }
-
+    
         int challengeId;
         try {
             challengeId = Integer.parseInt(command.split(" ")[1]);
@@ -340,15 +339,15 @@ public class Server {
             out.flush();
             return;
         }
-
+    
         // Get the current date
         LocalDate currentDate = LocalDate.now();
-
+    
         // Fetch challenge details from the database
         String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
         int numberOfQuestions = 0;
         long challengeDuration = 0;
-
+    
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, challengeId);
             pstmt.setString(2, currentDate.toString());
@@ -368,32 +367,33 @@ public class Server {
             out.flush();
             return;
         }
-
+    
         // Get random questions based on the challenge constraints
         List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
+        Map<Integer, Integer> questionMarks = getQuestionMarks(correctAnswers); // New method to get marks for each question
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-
+    
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Future<?> future = executor.schedule(() -> {
             out.println("Time's up! Sending the marking guide...");
             out.flush();
-            sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
+            sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
         }, challengeDuration, TimeUnit.MILLISECONDS);
-
+    
         try {
             for (Questions question : challengeQuestions) {
                 if (System.currentTimeMillis() - startTime >= challengeDuration) {
                     break;
                 }
-
+    
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
-
+    
                 String answer = in.readLine().trim();
                 userAnswers.put(question, answer);
-
+    
                 if (correctAnswers.containsKey(question.getQuestionId()) &&
                     correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
                     out.println("Correct!");
@@ -408,21 +408,22 @@ public class Server {
             executor.shutdownNow();
             future.cancel(true);
         }
-
-        sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
+    
+        sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
     
-    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, String email) {
+    
+    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String email) {
         int totalMarks = 0;
         for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
             Questions question = entry.getKey();
             String userAnswer = entry.getValue();
             if (correctAnswers.containsKey(question.getQuestionId()) &&
                 correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(userAnswer)) {
-                totalMarks++;
+                totalMarks += questionMarks.get(question.getQuestionId()); // Add the specific marks for the question
             }
         }
-
+    
         // Create PDF marking guide
         try {
             createPdfMarkingGuide(userAnswers, correctAnswers, totalMarks);
@@ -431,6 +432,34 @@ public class Server {
             e.printStackTrace();
         }
     }
+    
+
+    private static Map<Integer, Integer> getQuestionMarks(Map<Integer, String> correctAnswers) {
+        Map<Integer, Integer> questionMarks = new HashMap<>();
+        String query = "SELECT questionId, marks FROM answers WHERE questionId = ? AND answer = ?";
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
+            for (Map.Entry<Integer, String> entry : correctAnswers.entrySet()) {
+                int questionId = entry.getKey();
+                String correctAnswer = entry.getValue();
+                try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                    pstmt.setInt(1, questionId);
+                    pstmt.setString(2, correctAnswer);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next()) {
+                            questionMarks.put(questionId, rs.getInt("marks"));
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return questionMarks;
+    }
+    
+
     private static void createPdfMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage();
