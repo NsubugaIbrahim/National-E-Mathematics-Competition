@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class client {
+public class Client {
     public static void main(String[] args) {
         try (Socket socket = new Socket("localhost", 6666);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -17,6 +17,7 @@ public class client {
                     serverResponse.contains("Enter your username:") ||
                     serverResponse.contains("Enter your password:") ||
                     serverResponse.contains("Please enter your details in the format:") ||
+                    serverResponse.contains("Enter the command to attempt a challenge: AttemptChallenge [challengeId]") ||
                     serverResponse.contains("Please enter two numbers separated by a space to add:")) {
                     String userChoice = userInput.readLine();
                     out.println(userChoice);

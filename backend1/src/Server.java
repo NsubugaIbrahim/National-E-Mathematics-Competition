@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -164,7 +165,7 @@ public class Server {
                     viewChallenges(out, in, connection);
                     break;
                 case ATTEMPT_CHALLENGE:
-                    handleChallenge(in, out);
+                    handleChallenge(in, out, connection);
                     break;
                 case EXIT:
                     // Do nothing, will return to the initial menu
@@ -299,15 +300,61 @@ public class Server {
         return Base64.getEncoder().encodeToString(hash);
     }
     
-    private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        List<Questions> challengeQuestions = getRandomQuestions(10);
+    private static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
+        out.flush();
+
+        String command = in.readLine().trim();
+        if (!command.startsWith("AttemptChallenge")) {
+            out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
+            out.flush();
+            return;
+        }
+
+        int challengeId;
+        try {
+            challengeId = Integer.parseInt(command.split(" ")[1]);
+        } catch (NumberFormatException e) {
+            out.println("Invalid challenge ID. Please provide a valid number.");
+            out.flush();
+            return;
+        }
+
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+
+        // Fetch challenge details from the database
+        String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
+        int numberOfQuestions = 0;
+        long challengeDuration = 0;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, challengeId);
+            pstmt.setString(2, currentDate.toString());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    numberOfQuestions = rs.getInt("numberOfQuestions");
+                    challengeDuration = TimeUnit.MINUTES.toMillis(rs.getInt("duration"));
+                } else {
+                    out.println("Challenge not found or not active.");
+                    out.flush();
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while fetching challenge details: " + e.getMessage());
+            out.flush();
+            return;
+        }
+
+        // Get random questions based on the challenge constraints
+        List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-        long challengeDuration = TimeUnit.MINUTES.toMillis(1);
 
-        // Schedule a task to stop the challenge after the duration
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Future<?> future = executor.schedule(() -> {
             out.println("Time's up! Sending the marking guide...");
             out.flush();
@@ -316,36 +363,31 @@ public class Server {
 
         try {
             for (Questions question : challengeQuestions) {
-                // Check if time is up
                 if (System.currentTimeMillis() - startTime >= challengeDuration) {
                     break;
                 }
 
-                // Send question text to client
                 out.println("Question: " + question.getQuestionText());
-                out.flush(); // Ensure the question is sent immediately
+                out.flush();
 
-                // Receive answer from client with timeout
                 String answer = in.readLine().trim();
                 userAnswers.put(question, answer);
 
-                // Check answer correctness
                 if (correctAnswers.containsKey(question.getQuestionId()) &&
                     correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
                     out.println("Correct!");
                 } else {
                     out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
                 }
-                out.flush(); // Ensure response is sent immediately
+                out.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            executor.shutdownNow(); // Stop the timer task if it hasn't executed yet
-            future.cancel(true); // Cancel the scheduled task if it's still pending
+            executor.shutdownNow();
+            future.cancel(true);
         }
 
-        // Send the marking guide after the challenge is over
         sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
     }
     
@@ -805,13 +847,15 @@ public class Server {
     
     private static void viewChallenges(PrintWriter out, BufferedReader in, Connection connection) throws IOException {
         try {
-             
+            // Get the current date
+            LocalDate currentDate = LocalDate.now();
 
             // Create a statement to execute the SQL query
             Statement statement = connection.createStatement();
-                
-            // Execute the SQL query to fetch the challenges
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM challenges");
+
+            // Execute the SQL query to fetch the challenges with current date between startDate and endDate
+            String query = "SELECT * FROM challenges WHERE CURDATE() BETWEEN startDate AND endDate";
+            ResultSet resultSet = statement.executeQuery(query);
 
             // Create an empty list to store the challenges
             List<Challenge> challenges = new ArrayList<>();
@@ -824,7 +868,6 @@ public class Server {
                 String startDate = resultSet.getString("startDate");
                 String endDate = resultSet.getString("endDate");
 
-                
                 Challenge challenge = new Challenge(challengeId, numberOfQuestions, duration, startDate, endDate);
                 challenges.add(challenge);
             }
@@ -845,6 +888,8 @@ public class Server {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            out.println("An error occurred while fetching challenges: " + e.getMessage());
+            out.flush();
         }
     }
     
