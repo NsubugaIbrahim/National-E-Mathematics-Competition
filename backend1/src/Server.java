@@ -700,11 +700,11 @@ public class Server {
                     if (action.equals("yes")) {
                         insertIntoDatabase(connection, "participants", applicantDetails);
                         out.println("Applicant confirmed and added to participants.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations! Your application has been accepted.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations!" +username+ ", \nYour application has been accepted.");
                     } else if (action.equals("no")) {
                         insertIntoDatabase(connection, "rejected", applicantDetails);
                         out.println("Applicant rejected and added to rejected.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "We regret to inform you that your application has been rejected.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " +username+ ", \nWe regret to inform you that your application has been rejected.");
                     }
                     out.flush();
                 }
