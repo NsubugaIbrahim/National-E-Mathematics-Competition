@@ -5,6 +5,9 @@
 <head>
     <title>School Registration</title>
     <style>
+         .alert.alert-success{
+                    width: 50%;
+                }
         .availability {
             font-size: 20px;
             text-align: center; /* Center horizontally */
