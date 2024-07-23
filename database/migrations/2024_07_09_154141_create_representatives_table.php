@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string("representativeName");
             $table->string("representativeEmail")->unique();
             $table->string("schoolRegNo");
+            $table->string("password");
         });
     }
 
