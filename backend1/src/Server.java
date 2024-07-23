@@ -47,6 +47,7 @@ public class Server {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
+    private static Connection connection = null;
     private static String loggedInEmail;
 
     public static void main(String[] args) throws SQLException {
@@ -84,7 +85,7 @@ public class Server {
                     if ("participant".equalsIgnoreCase(userCategory)) {
                         switch (clientChoice) {
                             case REGISTER:
-                                handleRegistration(in, out);
+                                handleRegistration(in, out, connection);
                                 break;
                             case LOGIN:
                                 handleLogin(in, out, connection);
@@ -217,80 +218,100 @@ public class Server {
         return "";
     }
 
-        private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
+     private static void handleRegistration(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+            out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
 
-        String registrationDetails = in.readLine();
-        System.out.println("Registration details received: " + registrationDetails);
+            String registrationDetails = in.readLine();
+            System.out.println("Registration details received: " + registrationDetails);
 
-        try {
-            // Parse registration details
-            String[] details = registrationDetails.split(" ");
-            if (details.length < 9) {
-                out.println("Invalid input format. Please provide all required details.");
+            try {
+                // Parse registration details
+                String[] details = registrationDetails.split(" ");
+                if (details.length < 9) {
+                    out.println("Invalid input format. Please provide all required details.");
+                    return;
+                }
+
+                String username = details[1];
+                String firstname = details[2];
+                String lastname = details[3];
+                String email = details[4];
+                String password = details[5];
+                String date_of_birth = details[6];
+                String school_reg_no = details[7];
+                String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+                
+                // Verify school registration number
+                if (!isSchoolRegNoValid(school_reg_no, connection)) {
+                out.println("Invalid school registration number. Registration failed.");
+                out.flush();
                 return;
             }
 
-            String username = details[1];
-            String firstname = details[2];
-            String lastname = details[3];
-            String email = details[4];
-            String password = details[5];
-            String date_of_birth = details[6];
-            String school_reg_no = details[7];
-            String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+                // Validate image file path
+                Path sourcePath = Paths.get(image_path);
+                if (!Files.exists(sourcePath)) {
+                    out.println("Image file does not exist. Registration failed.");
+                    return;
+                }
 
-            // Validate image file path
-            Path sourcePath = Paths.get(image_path);
-            if (!Files.exists(sourcePath)) {
-                out.println("Image file does not exist. Registration failed.");
-                return;
-            }
+                // Ensure the folder exists
+                File folder = new File(IMAGE_FOLDER);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
 
-            // Ensure the folder exists
-            File folder = new File(IMAGE_FOLDER);
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
+                // Define the new image path
+                Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
+                Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Define the new image path
-            Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
-            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+                // Encrypt the password
+                String encryptedPassword = encryptPassword(password);
 
-            // Encrypt the password
-            String encryptedPassword = encryptPassword(password);
+                // Create a string with registration details
+                String registrationEntry = String.join(",",
+                    username,
+                    firstname,
+                    lastname,
+                    email,
+                    encryptedPassword,
+                    date_of_birth,
+                    school_reg_no,
+                    destinationPath.toString()
+                );
 
-            // Create a string with registration details
-            String registrationEntry = String.join(",",
-                username,
-                firstname,
-                lastname,
-                email,
-                encryptedPassword,
-                date_of_birth,
-                school_reg_no,
-                destinationPath.toString()
-            );
+                // Write registration details to text file
+                try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
+                    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                    PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
+                    printWriter.println(registrationEntry);
+                    System.out.println("Registration details saved to registration_details.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    out.println("Registration failed. Please try again.");
+                    return;
+                }
 
-            // Write registration details to text file
-            try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
-                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
-                printWriter.println(registrationEntry);
-                System.out.println("Registration details saved to registration_details.txt");
-            } catch (IOException e) {
+                // Send email confirmation
+                sendEmail(email, username, firstname, lastname, date_of_birth);
+
+                out.println("Registration successful!");
+            } catch (Exception e) {
                 e.printStackTrace();
                 out.println("Registration failed. Please try again.");
-                return;
             }
+     }
 
-            // Send email confirmation
-            sendEmail(email, username, firstname, lastname, date_of_birth);
-
-            out.println("Registration successful!");
-        } catch (Exception e) {
+     private static boolean isSchoolRegNoValid(String school_reg_no, Connection connection) {
+        String query = "SELECT 1 FROM schools WHERE schoolRegNo = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, school_reg_no);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next(); // Returns true if the school registration number exists
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            out.println("Registration failed. Please try again.");
+            return false;
         }
     }
 
