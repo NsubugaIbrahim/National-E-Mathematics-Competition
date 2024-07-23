@@ -2,6 +2,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.bouncycastle.asn1.cmp.Challenge;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -159,7 +161,7 @@ public class Server {
 
             switch (clientChoice) {
                 case VIEW_CHALLENGES:
-                    out.println("Challenges to be viewed here...");
+                    viewChallenges(out, in, connection);
                     break;
                 case ATTEMPT_CHALLENGE:
                     handleChallenge(in, out);
@@ -798,7 +800,89 @@ public class Server {
             e.printStackTrace();
         }
     }
+
     
     
+    private static void viewChallenges(PrintWriter out, BufferedReader in, Connection connection) throws IOException {
+        try {
+             
+
+            // Create a statement to execute the SQL query
+            Statement statement = connection.createStatement();
+                
+            // Execute the SQL query to fetch the challenges
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM challenges");
+
+            // Create an empty list to store the challenges
+            List<Challenge> challenges = new ArrayList<>();
+
+            // Iterate over the result set and populate the list of challenges
+            while (resultSet.next()) {
+                int challengeId = resultSet.getInt("challengeId");
+                int numberOfQuestions = resultSet.getInt("numberOfQuestions");
+                String duration = resultSet.getString("duration");
+                String startDate = resultSet.getString("startDate");
+                String endDate = resultSet.getString("endDate");
+
+                
+                Challenge challenge = new Challenge(challengeId, numberOfQuestions, duration, startDate, endDate);
+                challenges.add(challenge);
+            }
+
+            // Close the result set and statement
+            resultSet.close();
+            statement.close();
+
+            // Display the challenges
+            out.println("Challenges:");
+            for (Challenge challenge : challenges) {
+                out.println("Challenge ID: " + challenge.getChallengeId());
+                out.println("Number of Questions: " + challenge.getNumberOfQuestions());
+                out.println("Duration: " + challenge.getDuration());
+                out.println("Start Date: " + challenge.getStartDate());
+                out.println("End Date: " + challenge.getEndDate());
+                out.println();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
+    static class Challenge {
+        private int challengeId;
+        private int numberOfQuestions;
+        private String duration;
+        private String startDate;
+        private String endDate;
+    
+        public Challenge(int challengeId, int numberOfQuestions, String duration, String startDate, String endDate) {
+            this.challengeId = challengeId;
+            this.numberOfQuestions = numberOfQuestions;
+            this.duration = duration;
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+    
+        public int getChallengeId() {
+            return challengeId;
+        }
+    
+        public int getNumberOfQuestions() {
+            return numberOfQuestions;
+        }
+    
+        public String getDuration() {
+            return duration;
+        }
+    
+        public String getStartDate() {
+            return startDate;
+        }
+    
+        public String getEndDate() {
+            return endDate;
+        }
+    }
 }
 
