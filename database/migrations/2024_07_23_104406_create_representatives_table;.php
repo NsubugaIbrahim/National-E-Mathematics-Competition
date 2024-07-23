@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string("representativeName");
             $table->string("representativeEmail")->unique();
             $table->string("schoolRegNo");
+            $table->string("password");
         });
+
+
     }
 
     /**
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('representatives');
+        //
     }
 };

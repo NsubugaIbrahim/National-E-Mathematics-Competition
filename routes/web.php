@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChallengesController;
 use App\Http\Controllers\ChallengesviewController;
 use App\Http\Controllers\SchoolsController;
+use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\GraphsController;
 use App\Models\Challenge;
 use App\Models\School;
 use App\Models\Representative;
@@ -206,4 +208,6 @@ Route::post('/api/attempts', [App\Http\Controllers\AttemptController::class, 'st
 Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analytics'])->name('analytics');
 
 
-Route::get('/home', [SchoolsController::class, 'schoolsAddedOverTime'])->name('home');
+
+//Graphs
+Route::get('/home', [GraphsController::class, 'index'])->name('home');

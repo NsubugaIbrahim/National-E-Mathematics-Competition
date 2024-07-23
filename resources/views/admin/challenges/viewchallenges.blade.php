@@ -33,7 +33,7 @@
                     <th>Duration</th>
                     <th>Start date</th>
                     <th>End date</th>
-                    <th>Availability</th>
+                    <th>Validity</th>
                 </tr>
             </thead>
             <tbody>

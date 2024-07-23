@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Participant;
 
 class ParticipantController extends Controller
@@ -75,4 +76,6 @@ class ParticipantController extends Controller
                   $participant->delete();
                   return redirect()->route('participants')->with('success', 'Participant deleted successfully!');
               }
+              
+              
 }

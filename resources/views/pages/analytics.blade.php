@@ -38,8 +38,14 @@
             <div class="card ">
                 <div class="table-responsive">
                     <table class="table tablesorter" id="serial">
+                    <style>
+                        .blue-background {
+                            background-color: brown;
+                            color: white; /* Optional: to make the text readable */
+                        }
+                    </style>
                         <thead>
-                            <tr> 
+                        <tr class="blue-background"> 
                                 <th><h5>#</h5></th>
                                 <th><h5>Question ID</h5></th>
                                 <th><h5>Number of times answered correct</h5></th>
@@ -63,9 +69,14 @@
             <div class="card ">
                 <div class="table-responsive">
                     <table border ='1'class="table tablesorter" id="serial">
-                        
+                    <style>
+                        .blue-background {
+                            background-color: brown;
+                            color: white; /* Optional: to make the text readable */
+                        }
+                    </style>
                         <thead>
-                            <tr> 
+                            <tr class="blue-background"> 
                                 <th><h5>#</h5></th>
                                 <th><h5>School Reg No</h5></th>
                                 <th><h5>Total Correct Answers</h5></th>
@@ -96,7 +107,7 @@
                         }
                     </style>
                         <thead>
-                            <tr>
+                            <tr class="blue-background">
                                 <th><h5>#</h5></th>
                                 <th><h5>Year</h5></th>
                                 <th><h5>Username</h5></th>
@@ -131,7 +142,7 @@
                             }
                         </style>
                             <thead>
-                                <tr>
+                                <tr class="blue-background">
                                     <th><h5>#</h5></th>
                                     <th><h5>Question ID</h5></th>
                                     <th><h5>Number of repeated attempts</h5></th>                     
@@ -165,7 +176,7 @@
                             }
                         </style>
                             <thead>
-                                <tr>
+                                <tr class="blue-background">
                                     <th><h5>#</h5></th>
                                     <th><h5>School Reg No</h5></th>
                                     <th><h5>Total Correct Answers</h5></th>
@@ -196,7 +207,7 @@
                             }
                         </style>
                             <thead>
-                                <tr>
+                                <tr class="blue-background">
                                     <th><h5>#</h5></th>
                                     <th><h5>School Reg No</h5></th>
                                     <th><h5>Total Correct Answers</h5></th>
