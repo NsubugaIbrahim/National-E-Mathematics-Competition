@@ -3,6 +3,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -25,15 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.sql.Connection;
+import java.sql.Statement;
+import java.time.LocalDate;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
-import java.io.*;
-import java.nio.file.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class Server {
@@ -85,7 +84,7 @@ public class Server {
                     if ("participant".equalsIgnoreCase(userCategory)) {
                         switch (clientChoice) {
                             case REGISTER:
-                                handleRegistration(in, out);
+                                handleRegistration(in, out, connection);
                                 break;
                             case LOGIN:
                                 handleLogin(in, out, connection);
@@ -163,10 +162,10 @@ public class Server {
 
             switch (clientChoice) {
                 case VIEW_CHALLENGES:
-                    out.println("Challenges to be viewed here...");
+                    viewChallenges(out, in, connection);
                     break;
                 case ATTEMPT_CHALLENGE:
-                    handleChallenge(in, out);
+                    handleChallenge(in, out, connection);
                     break;
                 case EXIT:
                     // Do nothing, will return to the initial menu
@@ -218,151 +217,225 @@ public class Server {
         return "";
     }
 
-    private static void handleRegistration(BufferedReader in, PrintWriter out) throws IOException {
-    out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
+     private static void handleRegistration(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+            out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
 
-    String registrationDetails = in.readLine();
-    System.out.println("Registration details received: " + registrationDetails);
+            String registrationDetails = in.readLine();
+            System.out.println("Registration details received: " + registrationDetails);
 
-    try {
-        // Parse registration details
-        String[] details = registrationDetails.split(" ");
-        if (details.length < 9) {
-            out.println("Invalid input format. Please provide all required details.");
-            return;
-        }
+            try {
+                // Parse registration details
+                String[] details = registrationDetails.split(" ");
+                if (details.length < 9) {
+                    out.println("Invalid input format. Please provide all required details.");
+                    return;
+                }
 
-        String username = details[1];
-        String firstname = details[2];
-        String lastname = details[3];
-        String email = details[4];
-        String password = details[5];
-        String date_of_birth = details[6];
-        String school_reg_no = details[7];
-        String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+                String username = details[1];
+                String firstname = details[2];
+                String lastname = details[3];
+                String email = details[4];
+                String password = details[5];
+                String date_of_birth = details[6];
+                String school_reg_no = details[7];
+                String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+                
+                // Verify school registration number
+                if (!isSchoolRegNoValid(school_reg_no, connection)) {
+                out.println("Invalid school registration number. Registration failed.");
+                out.flush();
+                return;
+            }
 
-        // Validate image file path
-        Path sourcePath = Paths.get(image_path);
-        if (!Files.exists(sourcePath)) {
-            out.println("Image file does not exist. Registration failed.");
-            return;
-        }
+                // Validate image file path
+                Path sourcePath = Paths.get(image_path);
+                if (!Files.exists(sourcePath)) {
+                    out.println("Image file does not exist. Registration failed.");
+                    return;
+                }
 
-        // Ensure the folder exists
-        File folder = new File(IMAGE_FOLDER);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
+                // Ensure the folder exists
+                File folder = new File(IMAGE_FOLDER);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
 
-        // Define the new image path
-        Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
-        Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+                // Define the new image path
+                Path destinationPath = Paths.get(IMAGE_FOLDER + sourcePath.getFileName());
+                Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Encrypt the password
-        String encryptedPassword = encryptPassword(password);
+                // Encrypt the password
+                String encryptedPassword = encryptPassword(password);
 
-        // Create a string with registration details
-        String registrationEntry = String.join(",",
-            username,
-            firstname,
-            lastname,
-            email,
-            encryptedPassword,
-            date_of_birth,
-            school_reg_no,
-            destinationPath.toString()
-        );
+                // Create a string with registration details
+                String registrationEntry = String.join(",",
+                    username,
+                    firstname,
+                    lastname,
+                    email,
+                    encryptedPassword,
+                    date_of_birth,
+                    school_reg_no,
+                    destinationPath.toString()
+                );
 
-        // Write registration details to text file
-        try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
-             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-             PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
-            printWriter.println(registrationEntry);
-            System.out.println("Registration details saved to registration_details.txt");
-        } catch (IOException e) {
+                // Write registration details to text file
+                try (FileWriter fileWriter = new FileWriter("registration_details.txt", true);
+                    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                    PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
+                    printWriter.println(registrationEntry);
+                    System.out.println("Registration details saved to registration_details.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    out.println("Registration failed. Please try again.");
+                    return;
+                }
+
+                // Send email confirmation
+                sendEmail(email, username, firstname, lastname, date_of_birth);
+
+                out.println("Registration successful!");
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.println("Registration failed. Please try again.");
+            }
+     }
+
+     private static boolean isSchoolRegNoValid(String school_reg_no, Connection connection) {
+        String query = "SELECT 1 FROM schools WHERE schoolRegNo = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, school_reg_no);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next(); // Returns true if the school registration number exists
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            out.println("Registration failed. Please try again.");
+            return false;
+        }
+    }
+
+    private static String encryptPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(password.getBytes());
+        return Base64.getEncoder().encodeToString(hash);
+    }
+    
+    private static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
+        out.flush();
+    
+        String command = in.readLine().trim();
+        if (!command.startsWith("AttemptChallenge")) {
+            out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
+            out.flush();
             return;
         }
-
-        // Send email confirmation
-        sendEmail(email, username, firstname, lastname, date_of_birth);
-
-        out.println("Registration successful!");
-    } catch (Exception e) {
-        e.printStackTrace();
-        out.println("Registration failed. Please try again.");
-    }
-}
-
-private static String encryptPassword(String password) throws NoSuchAlgorithmException {
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    byte[] hash = md.digest(password.getBytes());
-    return Base64.getEncoder().encodeToString(hash);
-}
     
-
-    private static void handleChallenge(BufferedReader in, PrintWriter out) throws IOException {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        List<Questions> challengeQuestions = getRandomQuestions(10);
+        int challengeId;
+        try {
+            challengeId = Integer.parseInt(command.split(" ")[1]);
+        } catch (NumberFormatException e) {
+            out.println("Invalid challenge ID. Please provide a valid number.");
+            out.flush();
+            return;
+        }
+    
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+    
+        // Fetch challenge details from the database
+        String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
+        int numberOfQuestions = 0;
+        long challengeDuration = 0;
+    
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, challengeId);
+            pstmt.setString(2, currentDate.toString());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    numberOfQuestions = rs.getInt("numberOfQuestions");
+                    challengeDuration = TimeUnit.MINUTES.toMillis(rs.getInt("duration"));
+                } else {
+                    out.println("Challenge not found or not active.");
+                    out.flush();
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while fetching challenge details: " + e.getMessage());
+            out.flush();
+            return;
+        }
+    
+        // Get random questions based on the challenge constraints
+        List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
+        Map<Integer, Integer> questionMarks = getQuestionMarks(correctAnswers); // New method to get marks for each question
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-        long challengeDuration = TimeUnit.MINUTES.toMillis(1);
-
-        // Schedule a task to stop the challenge after the duration
+    
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Future<?> future = executor.schedule(() -> {
             out.println("Time's up! Sending the marking guide...");
             out.flush();
-            sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
+            sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
         }, challengeDuration, TimeUnit.MILLISECONDS);
-
+    
         try {
             for (Questions question : challengeQuestions) {
-                // Check if time is up
                 if (System.currentTimeMillis() - startTime >= challengeDuration) {
                     break;
                 }
-
-                // Send question text to client
+    
                 out.println("Question: " + question.getQuestionText());
-                out.flush(); // Ensure the question is sent immediately
-
-                // Receive answer from client with timeout
+                out.flush();
+    
                 String answer = in.readLine().trim();
                 userAnswers.put(question, answer);
-
-                // Check answer correctness
+    
                 if (correctAnswers.containsKey(question.getQuestionId()) &&
                     correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
                     out.println("Correct!");
                 } else {
                     out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
                 }
-                out.flush(); // Ensure response is sent immediately
+                out.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            executor.shutdownNow(); // Stop the timer task if it hasn't executed yet
-            future.cancel(true); // Cancel the scheduled task if it's still pending
+            executor.shutdownNow();
+            future.cancel(true);
         }
-
-        // Send the marking guide after the challenge is over
-        sendMarkingGuide(userAnswers, correctAnswers, loggedInEmail); // Pass the email
+    
+        sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
     
-    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, String email) {
+    
+    private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String email) {
         int totalMarks = 0;
         for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
             Questions question = entry.getKey();
             String userAnswer = entry.getValue();
-            if (correctAnswers.containsKey(question.getQuestionId()) &&
-                correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(userAnswer)) {
-                totalMarks++;
+            int questionId = question.getQuestionId();
+            
+            if (userAnswer.equals("-")) {
+                // Participant is not sure, award 0 marks
+                totalMarks += 0;
+            } else if (correctAnswers.containsKey(questionId) &&
+                correctAnswers.get(questionId).equalsIgnoreCase(userAnswer)) {
+                // Correct answer, award specific marks for the question
+                totalMarks += questionMarks.get(questionId);
+            } else if (userAnswer.equals("negative")) {
+                // Participant is not sure, award 0 marks
+                totalMarks += 0;
+            } else {
+                // Wrong answer, deduct 3 marks
+                totalMarks -= 3;
             }
         }
-
+    
         // Create PDF marking guide
         try {
             createPdfMarkingGuide(userAnswers, correctAnswers, totalMarks);
@@ -371,6 +444,34 @@ private static String encryptPassword(String password) throws NoSuchAlgorithmExc
             e.printStackTrace();
         }
     }
+    
+    
+
+    private static Map<Integer, Integer> getQuestionMarks(Map<Integer, String> correctAnswers) {
+        Map<Integer, Integer> questionMarks = new HashMap<>();
+        String query = "SELECT questionId, marks FROM answers WHERE questionId = ? AND answer = ?";
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
+            for (Map.Entry<Integer, String> entry : correctAnswers.entrySet()) {
+                int questionId = entry.getKey();
+                String correctAnswer = entry.getValue();
+                try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                    pstmt.setInt(1, questionId);
+                    pstmt.setString(2, correctAnswer);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next()) {
+                            questionMarks.put(questionId, rs.getInt("marks"));
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return questionMarks;
+    }
+    
 
     private static void createPdfMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks) throws IOException {
         try (PDDocument document = new PDDocument()) {
@@ -587,7 +688,6 @@ private static String encryptPassword(String password) throws NoSuchAlgorithmExc
         }
     }
     
-
     private static void sendEmail(String recipientEmail, String username, String firstname, String lastname, String dob) throws UnsupportedEncodingException{
         // Sender's email ID and name
         String fromEmail = "tgnsystemslimited@gmail.com";
@@ -647,7 +747,6 @@ private static String encryptPassword(String password) throws NoSuchAlgorithmExc
         }
     }
     
-
     private static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
         try {
             out.println("\nPlease enter your choice (confirm yes <username> or confirm no <username>):");
@@ -708,11 +807,11 @@ private static String encryptPassword(String password) throws NoSuchAlgorithmExc
                     if (action.equals("yes")) {
                         insertIntoDatabase(connection, "participants", applicantDetails);
                         out.println("Applicant confirmed and added to participants.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations! Your application has been accepted.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations!" +username+ ", \nYour application has been accepted.");
                     } else if (action.equals("no")) {
                         insertIntoDatabase(connection, "rejected", applicantDetails);
                         out.println("Applicant rejected and added to rejected.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "We regret to inform you that your application has been rejected.");
+                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " +username+ ", \nWe regret to inform you that your application has been rejected.");
                     }
                     out.flush();
                 }
@@ -806,7 +905,92 @@ private static String encryptPassword(String password) throws NoSuchAlgorithmExc
             e.printStackTrace();
         }
     }
+
     
     
+    private static void viewChallenges(PrintWriter out, BufferedReader in, Connection connection) throws IOException {
+        try {
+            // Get the current date
+            LocalDate currentDate = LocalDate.now();
+
+            // Create a statement to execute the SQL query
+            Statement statement = connection.createStatement();
+
+            // Execute the SQL query to fetch the challenges with current date between startDate and endDate
+            String query = "SELECT * FROM challenges WHERE CURDATE() BETWEEN startDate AND endDate";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            // Create an empty list to store the challenges
+            List<Challenge> challenges = new ArrayList<>();
+
+            // Iterate over the result set and populate the list of challenges
+            while (resultSet.next()) {
+                int challengeId = resultSet.getInt("challengeId");
+                int numberOfQuestions = resultSet.getInt("numberOfQuestions");
+                String duration = resultSet.getString("duration");
+                String startDate = resultSet.getString("startDate");
+                String endDate = resultSet.getString("endDate");
+
+                Challenge challenge = new Challenge(challengeId, numberOfQuestions, duration, startDate, endDate);
+                challenges.add(challenge);
+            }
+
+            // Close the result set and statement
+            resultSet.close();
+            statement.close();
+
+            // Display the challenges
+            out.println("Challenges:");
+            for (Challenge challenge : challenges) {
+                out.println("Challenge ID: " + challenge.getChallengeId());
+                out.println("Number of Questions: " + challenge.getNumberOfQuestions());
+                out.println("Duration: " + challenge.getDuration());
+                out.println("Start Date: " + challenge.getStartDate());
+                out.println("End Date: " + challenge.getEndDate());
+                out.println();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while fetching challenges: " + e.getMessage());
+            out.flush();
+        }
+    }
+    
+
+    static class Challenge {
+        private int challengeId;
+        private int numberOfQuestions;
+        private String duration;
+        private String startDate;
+        private String endDate;
+    
+        public Challenge(int challengeId, int numberOfQuestions, String duration, String startDate, String endDate) {
+            this.challengeId = challengeId;
+            this.numberOfQuestions = numberOfQuestions;
+            this.duration = duration;
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+    
+        public int getChallengeId() {
+            return challengeId;
+        }
+    
+        public int getNumberOfQuestions() {
+            return numberOfQuestions;
+        }
+    
+        public String getDuration() {
+            return duration;
+        }
+    
+        public String getStartDate() {
+            return startDate;
+        }
+    
+        public String getEndDate() {
+            return endDate;
+        }
+    }
 }
 
