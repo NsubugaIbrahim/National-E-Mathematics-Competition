@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PDO; //import PDO
 
 class SchoolsController extends Controller
@@ -31,5 +32,5 @@ class SchoolsController extends Controller
           return redirect()->back()->with('status', 'School(s) successfully registered');
         }
       }
-      
+
 }
