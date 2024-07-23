@@ -418,9 +418,21 @@ public class Server {
         for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
             Questions question = entry.getKey();
             String userAnswer = entry.getValue();
-            if (correctAnswers.containsKey(question.getQuestionId()) &&
-                correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(userAnswer)) {
-                totalMarks += questionMarks.get(question.getQuestionId()); // Add the specific marks for the question
+            int questionId = question.getQuestionId();
+            
+            if (userAnswer.equals("-")) {
+                // Participant is not sure, award 0 marks
+                totalMarks += 0;
+            } else if (correctAnswers.containsKey(questionId) &&
+                correctAnswers.get(questionId).equalsIgnoreCase(userAnswer)) {
+                // Correct answer, award specific marks for the question
+                totalMarks += questionMarks.get(questionId);
+            } else if (userAnswer.equals("negative")) {
+                // Participant is not sure, award 0 marks
+                totalMarks += 0;
+            } else {
+                // Wrong answer, deduct 3 marks
+                totalMarks -= 3;
             }
         }
     
@@ -432,6 +444,7 @@ public class Server {
             e.printStackTrace();
         }
     }
+    
     
 
     private static Map<Integer, Integer> getQuestionMarks(Map<Integer, String> correctAnswers) {
