@@ -3,6 +3,8 @@ public static void main(String[] args) {
     String PENDING_PARTICIPANTS_FILE = "src/pending_participants.txt";
     File file = new File(PENDING_PARTICIPANTS_FILE);
 
+
+
     try {
         // Ensure the parent directory exists
         File parentDir = file.getParentFile();

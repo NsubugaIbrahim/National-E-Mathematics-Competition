@@ -142,7 +142,7 @@ public class Client {
             String message = "CONFIRM " + confirmation + " " + username;
             out.println(message);
         } else {
-            System.out.println("Invalid input format. Use CONFIRM yes/no username.");
+            System.out.println("Invalid input format. Use CONFIRM yes/no followed by the username.");
         }
     }
 

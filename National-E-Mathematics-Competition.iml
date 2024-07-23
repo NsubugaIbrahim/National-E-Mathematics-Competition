@@ -110,15 +110,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../jew/pdfbox-app-3.0.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/../../jew/pdfbox-app-2.0.31.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -138,6 +129,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../jew/pdfbox-io-3.0.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../libraries/pdfbox-app-3.0.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

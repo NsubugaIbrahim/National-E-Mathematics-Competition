@@ -14,21 +14,21 @@ class QuestionImport implements ToCollection, WithHeadingRow
     */
     public function collection(Collection $rows)
     {
-        foreach ($rows as $row) 
+        foreach ($rows as $row)
         {
             $question = Question::where('questionId', $row['questionid'])->first();
             if($question){
                 $question->update([
                 'questionText' => $row['questiontext'],
-                ]); 
+                ]);
             }else{
 
                 Question::create([
                     'questionId' => $row['questionid'],
                 'questionText' => $row['questiontext'],
-                ]);   
+                ]);
             }
-        
+
         }
     }
 }

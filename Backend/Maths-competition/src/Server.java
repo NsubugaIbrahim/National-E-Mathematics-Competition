@@ -30,16 +30,38 @@ public class Server {
         if (participants.containsKey(participant.getUsername())) {
             return false;
         }
+        if (!isSchoolRegNoValid(participant.getSchoolRegNo())) {
+            return false;
+        }
+
+        Representative representative = getRepresentativeBySchoolRegNo(participant.getSchoolRegNo());
+        if (representative == null) {
+            System.err.println("No representative found for school registration number: " + participant.getSchoolRegNo());
+            return false;
+        }
+
         participants.put(participant.getUsername(), participant);
         saveParticipantToFile(participant); // Save participant to file
+        sendEmailToSchool(participant, representative); // Send email to school representative
         return true;
-        /*participants.put(participant.getUsername(), participant);
-        saveParticipantToDatabase(participant);
-        return true;*/
+    }
+
+    private boolean isSchoolRegNoValid(String schoolRegNo) {
+        String sql = "SELECT COUNT(*) FROM schools WHERE schoolRegNo = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, schoolRegNo);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error validating school registration number: " + e.getMessage());
+        }
+        return false;
     }
 
     private void saveParticipantToFile(Participant participant) {
-        
+
         try (FileWriter fw = new FileWriter(PENDING_PARTICIPANTS_FILE, true);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
@@ -73,47 +95,6 @@ public class Server {
         return new ArrayList<>(participants.values());
     }
 
-    /*private void saveParticipantToDatabase(Participant participant) {
-        String sql = "INSERT INTO participant (participantId, username, firstName, lastName, email, dateOfBirth, schoolRegNo, imageFile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, participant.getParticipantId());
-            pstmt.setString(2, participant.getUsername());
-            pstmt.setString(3, participant.getFirstName());
-            pstmt.setString(4, participant.getLastName());
-            pstmt.setString(5, participant.getEmail());
-            pstmt.setString(6, participant.getDateOfBirth());
-            pstmt.setString(7, participant.getSchoolRegNo());
-            pstmt.setString(8, participant.getImageFile());
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error saving participant to database: " + e.getMessage());
-        }
-    }*/
-
-
-    /*public List<Participant> getPendingParticipants() {
-        List<Participant> pendingParticipants = new ArrayList<>();
-        String sql = "SELECT * FROM participant WHERE status IS NULL";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                Participant participant = new Participant(
-                    rs.getString("participantId"),
-                    rs.getString("username"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getString("email"),
-                    rs.getString("dateOfBirth"),
-                    rs.getString("schoolRegNo"),
-                    rs.getString("imageFile")
-                );
-                pendingParticipants.add(participant);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving pending participants from database: " + e.getMessage());
-        }
-        return pendingParticipants;
-    }*/
-
     public void confirmParticipant(String confirmation, String username) {
         Participant participant = participants.get(username);
         if (participant == null) {
@@ -121,7 +102,7 @@ public class Server {
             return;
         }
 
-        String status = null;
+        String status;
         if (confirmation.equalsIgnoreCase("yes")) {
             status = "accepted";
         } else if (confirmation.equalsIgnoreCase("no")) {
@@ -162,6 +143,25 @@ public class Server {
         }
     }
 
+    private Representative getRepresentativeBySchoolRegNo(String schoolRegNo) {
+        String sql = "SELECT * FROM representatives WHERE schoolRegNo = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, schoolRegNo);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Representative(
+                        rs.getString("representativeName"),
+                        rs.getString("representativeEmail"),
+                        rs.getString("schoolRegNo")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving representative from database: " + e.getMessage());
+        }
+        return null;
+    }
+
     public static void sendEmail(Participant participant, boolean accepted) {
         final String username = "tgnsystemslimited@gmail.com"; // your email
         final String password = "anls iqfv zxwt irfq"; // your email password
@@ -199,6 +199,52 @@ public class Server {
             System.err.println("Error sending email: " + e.getMessage());
         }
     }
+
+    private void sendEmailToSchool(Participant participant, Representative representative) {
+        final String username = "tgnsystemslimited@gmail.com"; // your email
+        final String password = "anls iqfv zxwt irfq"; // your email password
+        String toEmail = representative.getRepresentativeEmail(); // School representative's email address
+        String subject = "New Participant Registration";
+        String body = "Dear " + representative.getRepresentativeName() + ",\n\n" +
+            "A new participant has registered with the following details:\n" +
+            "Username: " + participant.getUsername() + "\n" +
+            "First Name: " + participant.getFirstName() + "\n" +
+            "Last Name: " + participant.getLastName() + "\n" +
+            "Email: " + participant.getEmail() + "\n" +
+            "Date of Birth: " + participant.getDateOfBirth() + "\n" +
+            "School Registration Number: " + participant.getSchoolRegNo() + "\n\n" +
+            "Please confirm the participant by logging into the system.\n\n" +
+            "Thank you,\nMath Challenge Team";
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.googlemail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.debug", "true");
+
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
+            message.setSubject(subject);
+            message.setText(body);
+
+            Transport.send(message);
+
+            System.out.println("Email sent to school representative successfully!");
+        } catch (MessagingException e) {
+            System.err.println("Error sending email to school representative: " + e.getMessage());
+        }
+    }
+
 
     public void startChallenge(Participant participant, PrintWriter out, BufferedReader in) throws IOException {
         if (participant == null) {
@@ -251,9 +297,6 @@ public class Server {
             remainingQuestions--;
         }
         out.println("Challenge completed!");
-    }
-    public Participant getParticipant(String username) {
-        return participants.get(username);
     }
 
     private List<Question> getQuestionsFromDatabase() {
@@ -381,7 +424,7 @@ public class Server {
     private static class ClientHandler extends Thread {
         private final Socket socket;
         private final Server server;
-        private ObjectOutputStream objOut;
+        ObjectOutputStream objOut;
 
         public ClientHandler(Socket socket, Server server) {
             this.socket = socket;
@@ -392,7 +435,7 @@ public class Server {
             try (
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
+                ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream())
             ) {
                 this.objOut = objOut;
                 String input;
