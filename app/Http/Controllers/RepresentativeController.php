@@ -37,4 +37,5 @@ class RepresentativeController extends Controller
             return redirect()->back()->with('status', 'Representative(s) successfully validated');
         }
     }
+  }
 }
