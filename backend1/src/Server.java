@@ -383,11 +383,17 @@ public class Server {
         }, challengeDuration, TimeUnit.MILLISECONDS);
     
         try {
-            for (Questions question : challengeQuestions) {
-                if (System.currentTimeMillis() - startTime >= challengeDuration) {
+            for (int i = 0; i < challengeQuestions.size(); i++) {
+                Questions question = challengeQuestions.get(i);
+                long elapsed = System.currentTimeMillis() - startTime;
+                long timeRemaining = challengeDuration - elapsed;
+    
+                if (timeRemaining <= 0) {
                     break;
                 }
     
+                out.println("Remaining questions: " + (challengeQuestions.size() - i));
+                out.println("Time remaining: " + timeRemaining / 1000 + " seconds");
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
     
