@@ -9,7 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.nio.file.*;
@@ -967,8 +967,7 @@ public class Server {
     
     private static void viewChallenges(PrintWriter out, BufferedReader in, Connection connection) throws IOException {
         try {
-            // Get the current date
-            LocalDate currentDate = LocalDate.now();
+            
 
             // Create a statement to execute the SQL query
             Statement statement = connection.createStatement();
