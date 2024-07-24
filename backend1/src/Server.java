@@ -68,7 +68,7 @@ public class Server {
 
                     if ("participant".equalsIgnoreCase(userCategory)) {
                         displayParticipantMenu(out);
-                    } else if ("school representative".equalsIgnoreCase(userCategory)) {
+                    } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
                         displayRepresentativeMenu(out);
                     } else {
                         out.println("Invalid user category selected.");
@@ -93,7 +93,7 @@ public class Server {
                             default:
                                 out.println("Invalid option selected.");
                         }
-                    } else if ("school representative".equalsIgnoreCase(userCategory)) {
+                    } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
                         switch (clientChoice) {
                             case VIEW_APPLICANTS:
                                 handleViewApplicants(out);
@@ -117,31 +117,31 @@ public class Server {
     private static void displayInitialMenu(PrintWriter out) {
         out.println("\nWhich user category are you?\n");
         out.println("participant");
-        out.println("school representative\n");
+        out.println("schoolrepresentative\n");
         out.println("Please enter your choice:\n");
     }
 
     private static void displayParticipantMenu(PrintWriter out) {
         out.println("Participant Menu:\n");
-        out.println("1. " + REGISTER + " - Register");
-        out.println("2. " + LOGIN + " - Login\n");
-        out.println("3. " + EXIT + " - Exit\n");
+        out.println(  REGISTER );
+        out.println( LOGIN );
+        out.println( EXIT );
         out.println("Please enter your choice:");
     }
 
     private static void displayParticipantLoggedInMenu(PrintWriter out) {
         out.println("Participant Menu (Logged In):\n");
-        out.println("1. " + VIEW_CHALLENGES + " - View Challenges");
-        out.println("2. " + ATTEMPT_CHALLENGE + " - Attempt Challenge\n\n");
-        out.println("3. " + EXIT + " - Exit\n");
+        out.println( VIEW_CHALLENGES );
+        out.println( ATTEMPT_CHALLENGE );
+        out.println( EXIT );
         out.println("Please enter your choice:");
     }
 
     private static void displayRepresentativeMenu(PrintWriter out) {
-        out.println("School Representative Menu:\n");
-        out.println("1. " + VIEW_APPLICANTS + " - View Applicants");
-        out.println("2. " + CONFIRM_APPLICANT + " - Confirm Applicant\n");
-        out.println("3. " + EXIT + " - Exit\n");
+        out.println("School Representative's Menu:\n");
+        out.println( VIEW_APPLICANTS );
+        out.println( CONFIRM_APPLICANT );
+        out.println( EXIT );
         out.println("Please enter your choice:\n\n");
     }
 
