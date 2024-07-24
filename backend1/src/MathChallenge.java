@@ -32,7 +32,7 @@ public class MathChallenge {
             String answer = scanner.nextLine().trim();
             userAnswers.put(question, answer);
 
-            if (correctAnswers.containsKey(question.getQuestionId()) && 
+            if (correctAnswers.containsKey(question.getQuestionId()) &&
                 correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
                 totalMarks++;
                 System.out.println("Correct!");
@@ -44,10 +44,10 @@ public class MathChallenge {
 
         System.out.println("You scored: " + totalMarks + " out of " + challengeQuestions.size());
         scanner.close();
-        
+
         // Generate PDF report
         generatePDFReport(userAnswers, correctAnswers, totalMarks, challengeQuestions.size());
-        
+
     }
 
     public static List<Questions> getRandomQuestions(int numberOfQuestions) {
@@ -157,7 +157,7 @@ class Question {
     private int questionId;
     private String questionText;
 
-    public Question(int questionId, String questionText) {
+    public Question(int questionId, String questionText, int marks) {
         this.questionId = questionId;
         this.questionText = questionText;
     }
@@ -168,5 +168,9 @@ class Question {
 
     public String getQuestionText() {
         return questionText;
+    }
+
+    public int getMarks() {
+        return 0;
     }
 }

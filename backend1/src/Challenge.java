@@ -1,11 +1,13 @@
+import java.sql.Date;
+
 public class Challenge {
     private int challengeId;
     private int numberOfQuestions;
     private String duration;
-    private String startDate;
-    private String endDate;
+    private Date startDate;
+    private Date endDate;
 
-    public Challenge(int challengeId, int numberOfQuestions, String duration, String startDate, String endDate) {
+    public Challenge(int challengeId, int numberOfQuestions, String duration, Date startDate, Date endDate) {
         this.challengeId = challengeId;
         this.numberOfQuestions = numberOfQuestions;
         this.duration = duration;
@@ -25,11 +27,11 @@ public class Challenge {
         return duration;
     }
 
-    public String getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public String getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 }
