@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use PDO; //import PDO
+use Illuminate\Support\Facades\DB;
+use App\Models\School;
 
 class SchoolsController extends Controller
 {
@@ -21,7 +22,7 @@ class SchoolsController extends Controller
       
           // Loop through each row's data and insert into database
           for ($i = 0; $i < count($schoolRegNo); $i++) {
-            $pdo = new PDO('mysql:host=localhost;dbname=mathchallenge', 'root', '');
+            $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
             $sql = "INSERT INTO schools(schoolRegNo, schoolName, district) VALUES (?, ?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array($schoolRegNo[$i], $schoolName[$i], $district[$i]));

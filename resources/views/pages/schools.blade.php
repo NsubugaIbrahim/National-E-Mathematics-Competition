@@ -61,7 +61,7 @@
             </tbody>
         </table>
         <br><br>
-        <button id="" class="btn btn-secondary"> <i class="tim-icons icon-cloud-upload-94"></i>   Registers all Schools</button>
+        <button id="" class="btn btn-secondary"> <i class="tim-icons icon-cloud-upload-94"></i>   Register School(s)</button>
         </form>
         <br><br>
                         @if (session('status'))

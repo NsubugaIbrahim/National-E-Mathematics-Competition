@@ -7,14 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
+  public $timestamps = false;
+  
   protected $table = 'questions';
   public $timestamps = false;
   protected $fillable = ['questionId', 'questionText'];
   
 
-  // public function answer()
-  // {
-  //   return $this->hasOne(Answer::class); // Defines a one-to-one relationship with the Answer model
-  // }
+  
 }
 
