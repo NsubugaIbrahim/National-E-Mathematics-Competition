@@ -15,7 +15,7 @@
         @csrf
           <input type="file" name="import_file" class="form-control"/>
           <button class="btn btn-primary">Import</button>
-        </form>
+      </form>
     </div>
     </div>
   </div>

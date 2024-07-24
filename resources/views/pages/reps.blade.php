@@ -49,21 +49,23 @@
         <table border="1">
             <thead>
                 <tr>
-                    <th><h4>Representative name</h4></th>
-                    <th><h4>Representative email</h4></th>
-                    <th><h4>School registration number</h4></th>
+                    <th><h4>Name</h4></th>
+                    <th><h4>Email</h4></th>
+                    <th><h4>School Reg no</h4></th>
+                    <th><h4>Password</h4></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><input type="text" name="name[]" placeholder= "Name" required></td>
                     <td><input type="email" name="email[]" placeholder= "Email" required></td>
-                    <td><input type="text" name="regno[]" style="width: 250px;" placeholder= "Regno" required></td>
+                    <td><input type="text" name="regno[]" style="width: 130px;" placeholder= "Regno" required></td>
+                    <td><input type="text" name="password[]" style="width: 100px;" placeholder= "Password" required></td>
                 </tr>
             </tbody>
         </table>
         <br>
-        <button id="" class="btn btn-secondary"><i class="tim-icons icon-cloud-upload-94"></i>   Validate all School representatives</button>
+        <button id="" class="btn btn-secondary"><i class="tim-icons icon-cloud-upload-94"></i>   Validate School representative(s)</button>
         </form>
                     @if (session('status'))
                         <div class="alert alert-success">{{session('status')}}</div>
@@ -79,7 +81,8 @@
                 newRow.innerHTML = `
                     <td><input type="text" name="name[]" placeholder= "Name" required></td>
                     <td><input type="email" name="email[]" placeholder= "Email" required></td>
-                    <td><input type="text" name="regno[]" style="width: 250px;" placeholder= "Regno" required></td>
+                    <td><input type="text" name="regno[]" style="width: 130px;" placeholder= "Regno" required></td>
+                    <td><input type="text" name="password[]" style="width: 100px;" placeholder= "Password" required></td>
                 `;
                 tableBody.appendChild(newRow);
             });

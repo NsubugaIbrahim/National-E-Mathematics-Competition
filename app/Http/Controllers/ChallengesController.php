@@ -23,6 +23,9 @@ class ChallengesController extends Controller
             // Database connection
             $pdo = new PDO('mysql:host=localhost;dbname=maths', 'root', '');
 
+
+            $pdo = new PDO('mysql:host=localhost;dbname=mathchallenge', 'root', '');
+
             // SQL query
             $sql = "INSERT INTO challenges(numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
@@ -33,4 +36,15 @@ class ChallengesController extends Controller
             return redirect()->back()->with('status', 'Challenge has been successfully created and uploaded to the database');
         }
     }
+
+    public function searchChallenges(Request $request)
+        {
+          $searchTerm = $request->input('search');
+
+          $challenges = Challenge::where('challengeName', 'like', "%{$searchTerm}%")
+                                  ->orWhere('numberOfQuestions', $searchTerm)
+                                  ->get(); // Adjust search criteria as needed
+
+          return view('admin.challenges.viewchallenges', compact('challenges'));
+        }
 }

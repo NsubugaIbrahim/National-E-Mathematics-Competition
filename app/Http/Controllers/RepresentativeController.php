@@ -23,8 +23,14 @@ class RepresentativeController extends Controller
             for ($i = 0; $i < count($representativeName); $i++) {
               $pdo = new PDO('mysql:host=localhost;dbname=maths', 'root', '');
               $sql = "INSERT INTO representatives(representativeName, representativeEmail, schoolRegNo) VALUES (?, ?, ?)";
+            $password = $request->input('password');
+
+            // Loop through each row's data and insert into database
+            for ($i = 0; $i < count($representativeName); $i++) {
+              $pdo = new PDO('mysql:host=localhost;dbname=mathchallenge', 'root', '');
+              $sql = "INSERT INTO representatives(representativeName, representativeEmail, schoolRegNo, password) VALUES (?, ?, ?, ?)";
               $stmt = $pdo->prepare($sql);
-              $stmt->execute(array($representativeName[$i], $representativeEmail[$i], $schoolRegNo[$i]));
+              $stmt->execute(array($representativeName[$i], $representativeEmail[$i], $schoolRegNo[$i], $password[$i]));
             }
 
             // Redirect to the success page
