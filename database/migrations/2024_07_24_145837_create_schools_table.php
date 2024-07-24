@@ -14,11 +14,12 @@ class CreateSchoolsTable extends Migration
     public function up()
     {
         Schema::create('schools', function (Blueprint $table) {
-            $table->id('schoolId');
-            $table->string('schoolRegNo')->unique();
-            $table->string('schoolName');
-            $table->string('district');
-            
+            $table->id("schoolId");
+            $table->string("schoolRegNo");
+            $table->string("schoolName");
+            $table->string("district");
+            $table->timestamps();
+
         });
     }
 

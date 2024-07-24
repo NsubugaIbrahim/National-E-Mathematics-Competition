@@ -236,19 +236,19 @@ public class Server {
                 String lastname = details[3];
                 String email = details[4];
                 String password = details[5];
-                String date_of_birth = details[6];
-                String school_reg_no = details[7];
-                String image_path = details[8].replace("\"", ""); // Remove quotes from the file path
+                String dateOfBirth = details[6];
+                String schoolRegno = details[7];
+                String imageFilePath = details[8].replace("\"", ""); // Remove quotes from the file path
                 
                 // Verify school registration number
-                if (!isSchoolRegNoValid(school_reg_no, connection)) {
+                if (!isSchoolRegNoValid(schoolRegno, connection)) {
                 out.println("Invalid school registration number. Registration failed.");
                 out.flush();
                 return;
             }
 
                 // Validate image file path
-                Path sourcePath = Paths.get(image_path);
+                Path sourcePath = Paths.get(imageFilePath);
                 if (!Files.exists(sourcePath)) {
                     out.println("Image file does not exist. Registration failed.");
                     return;
@@ -274,8 +274,8 @@ public class Server {
                     lastname,
                     email,
                     encryptedPassword,
-                    date_of_birth,
-                    school_reg_no,
+                    dateOfBirth,
+                    schoolRegno,
                     destinationPath.toString()
                 );
 
@@ -292,7 +292,7 @@ public class Server {
                 }
 
                 // Send email confirmation
-                sendEmail(email, username, firstname, lastname, date_of_birth);
+                sendEmail(email, username, firstname, lastname, dateOfBirth);
 
                 out.println("Registration successful!");
             } catch (Exception e) {
@@ -301,10 +301,10 @@ public class Server {
             }
      }
 
-     private static boolean isSchoolRegNoValid(String school_reg_no, Connection connection) {
+     private static boolean isSchoolRegNoValid(String schoolRegno, Connection connection) {
         String query = "SELECT 1 FROM schools WHERE schoolRegNo = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, school_reg_no);
+            pstmt.setString(1, schoolRegno);
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next(); // Returns true if the school registration number exists
             }
@@ -894,7 +894,7 @@ public class Server {
             return;
         }
     
-        String query = "INSERT INTO " + tableName + " (username, firstname, lastname, email, password, date_of_birth, school_reg_no, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO " + tableName + " (username, firstname, lastname, email, password, dateOfBirth, schoolRegno, imageFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, details[0]); // Adjust index based on your format

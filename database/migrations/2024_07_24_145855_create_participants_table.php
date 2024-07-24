@@ -12,15 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('participants', function (Blueprint $table) {
-            $table->id();
-            $table->string('username')->unique();
-            $table->string('firstname');
-            $table->string('lastname');
-            $table->string('email');
-            $table->string('password');
-            $table->date('date_of_birth');
-            $table->string('school_reg_no');
-            $table->text('image_path')->nullable();
+            $table->id("participantId");
+            $table->string("username")->unique();
+            $table->string("firstName");
+            $table->string("lastName");
+            $table->string("email")->unique();
+            $table->string("password");
+            $table->date("dateOfBirth");
+            $table->string("schoolRegno");
+            $table->string("imageFilePath")->nullable();
+            $table->timestamps();
+
+
+            
+
         });
     }
 
