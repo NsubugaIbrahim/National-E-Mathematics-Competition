@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model
 {
+
+  public $timestamps = false;
+
   protected $table = 'answers';
   protected $fillable = ['answerId','questionId', 'answer', 'marks'];
 
-  public function question()
-  {
-    return $this->belongsTo(Question::class); // Defines a belongs-to relationship with the Question model
-  }
+  
 }
