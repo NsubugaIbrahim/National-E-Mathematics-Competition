@@ -28,6 +28,7 @@ import java.util.Map;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -160,12 +161,20 @@ public class Server {
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
 
+            int participantId = getParticipantId(username, connection); // Declare and initialize participantId
+
             switch (clientChoice) {
                 case VIEW_CHALLENGES:
                     viewChallenges(out, in, connection);
                     break;
-                case ATTEMPT_CHALLENGE:
-                    handleChallenge(in, out, connection);
+                    case ATTEMPT_CHALLENGE:
+                    try {
+                        handleChallenge(in, out, connection, participantId, loggedInEmail);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        out.println("An error occurred while handling the challenge: " + e.getMessage());
+                        out.flush();
+                    }
                     break;
                 case EXIT:
                     // Do nothing, will return to the initial menu
@@ -176,6 +185,24 @@ public class Server {
         } else {
             out.println("Login failed. Invalid username or password.");
         }
+    }
+
+    public static int getParticipantId(String username, Connection connection) {
+        int participantId = -1;
+        String query = "SELECT participantId FROM participants WHERE username = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    participantId = rs.getInt("participantId");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return participantId;
     }
 
     private static boolean authenticate(String username, String password, Connection connection) {
@@ -320,17 +347,37 @@ public class Server {
         return Base64.getEncoder().encodeToString(hash);
     }
     
-    private static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+    private static void saveAttempt(int participantId, int challengeId, int questionId, boolean isCorrect, long duration, LocalDateTime attemptedAt) {
+        String query = "INSERT INTO attempts (participantId, challengeId, questionId, isCorrect, duration, attemptedAt, created_at, updated_at) " +
+                       "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, questionId);
+            pstmt.setBoolean(4, isCorrect);
+            pstmt.setLong(5, duration);
+            pstmt.setObject(6, attemptedAt);
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection, int participantId, String loggedInEmail) throws IOException {
         out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
         out.flush();
-    
+
         String command = in.readLine().trim();
         if (!command.startsWith("AttemptChallenge")) {
             out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
             out.flush();
             return;
         }
-    
+
         int challengeId;
         try {
             challengeId = Integer.parseInt(command.split(" ")[1]);
@@ -339,15 +386,15 @@ public class Server {
             out.flush();
             return;
         }
-    
+
         // Get the current date
         LocalDate currentDate = LocalDate.now();
-    
+
         // Fetch challenge details from the database
         String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
         int numberOfQuestions = 0;
         long challengeDuration = 0;
-    
+
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, challengeId);
             pstmt.setString(2, currentDate.toString());
@@ -367,41 +414,46 @@ public class Server {
             out.flush();
             return;
         }
-    
+
         // Get random questions based on the challenge constraints
         List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Integer, Integer> questionMarks = getQuestionMarks(correctAnswers); // New method to get marks for each question
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-    
+
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        Future<?> future = executor.schedule(() -> {
+        Runnable timeoutTask = () -> {
             out.println("Time's up! Sending the marking guide...");
             out.flush();
             sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
-        }, challengeDuration, TimeUnit.MILLISECONDS);
-    
+        };
+        executor.schedule(timeoutTask, challengeDuration, TimeUnit.MILLISECONDS);
+
         try {
-            for (int i = 0; i < challengeQuestions.size(); i++) {
-                Questions question = challengeQuestions.get(i);
+            for (Questions question : challengeQuestions) {
                 long elapsed = System.currentTimeMillis() - startTime;
                 long timeRemaining = challengeDuration - elapsed;
-    
+
                 if (timeRemaining <= 0) {
                     break;
                 }
-    
-                out.println("Remaining questions: " + (challengeQuestions.size() - i));
+
+                out.println("Remaining questions: " + (challengeQuestions.size() - userAnswers.size()));
                 out.println("Time remaining: " + timeRemaining / 1000 + " seconds");
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
-    
+
                 String answer = in.readLine().trim();
+                long duration = System.currentTimeMillis() - startTime;
+
+                boolean isCorrect = correctAnswers.containsKey(question.getQuestionId()) &&
+                                    correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer);
                 userAnswers.put(question, answer);
-    
-                if (correctAnswers.containsKey(question.getQuestionId()) &&
-                    correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer)) {
+
+                saveAttempt(participantId, challengeId, question.getQuestionId(), isCorrect, duration, LocalDateTime.now());
+
+                if (isCorrect) {
                     out.println("Correct!");
                 } else {
                     out.println("Wrong! Correct answer: " + correctAnswers.get(question.getQuestionId()));
@@ -412,9 +464,8 @@ public class Server {
             e.printStackTrace();
         } finally {
             executor.shutdownNow();
-            future.cancel(true);
         }
-    
+
         sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
     
