@@ -6,6 +6,7 @@ use App\Http\Controllers\ChallengesviewController;
 use App\Http\Controllers\SchoolsController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\GraphsController;
+use App\Http\Controllers\BesttwoController;
 use App\Models\Challenge;
 use App\Models\School;
 use App\Models\Representative;
@@ -211,3 +212,6 @@ Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analy
 
 //Graphs
 Route::get('/home', [GraphsController::class, 'index'])->name('home');
+
+
+Route::get('/top-participants', [BesttwoController::class, 'getTopParticipants']);
