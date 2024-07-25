@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7a859c92-813f-46ac-96cb-f49d22d278ff" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../app/Http/Controllers/BesttwoController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/Http/Controllers/BesttwoController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Marking_Guide.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Marking_Guide.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$3.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$Challenge.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$Challenge.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/backend1/registration_details.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/registration_details.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../public/participant-images" beforeDir="false" afterPath="$PROJECT_DIR$/../public/participant-images" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resources/views/top_participants.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/../resources/views/top_participants.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/../routes/web.php" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2jhRSIysLwS9SVSDhDuApAb9dH3" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Client.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Server.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Clone/National-E-Mathematics-Competition/backend1&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
+  }
+}</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-21.0.2-openjdk-21.0.2-4caba194b151-4f524021" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7a859c92-813f-46ac-96cb-f49d22d278ff" name="Changes" comment="" />
+      <created>1721837321070</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1721837321070</updated>
+    </task>
+    <servers />
+  </component>
+</project>
