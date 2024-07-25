@@ -524,8 +524,12 @@ public class Server {
                     break;
                 }
 
+                    // Convert time remaining to minutes and seconds
+                long minutesRemaining = timeRemaining / (1000 * 60);
+                long secondsRemaining = (timeRemaining % (1000 * 60)) / 1000;
+
                 out.println("Remaining questions: " + (challengeQuestions.size() - userAnswers.size()));
-                out.println("Time remaining: " + timeRemaining / 1000 + " seconds");
+                out.println("Time remaining: " + minutesRemaining + " minutes " + secondsRemaining + " seconds");
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
 
