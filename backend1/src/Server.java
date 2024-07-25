@@ -143,9 +143,9 @@ public class Server {
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
-        out.println("Participant Menu (Logged In):\n");
-        out.println( VIEW_CHALLENGES );
-        out.println( ATTEMPT_CHALLENGE );
+        out.println("School Representative Menu (Logged In):\n");
+        out.println( VIEW_APPLICANTS );
+        out.println( CONFIRM_APPLICANT );
         out.println( EXIT );
         out.println("Please enter your choice:");
     }
