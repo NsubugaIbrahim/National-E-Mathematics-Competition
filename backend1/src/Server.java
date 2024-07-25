@@ -62,47 +62,7 @@ public class Server {
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
                     System.out.println("Client connected...");
-                    displayInitialMenu(out);
-
-                    String userCategory = in.readLine();
-                    System.out.println("User category selected: " + userCategory);
-
-                    if ("participant".equalsIgnoreCase(userCategory)) {
-                        displayParticipantMenu(out);
-                    } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
-                        displayRepresentativeMenu(out);
-                    } else {
-                        out.println("Invalid user category selected.");
-                        continue;
-                    }
-
-                    String clientChoice = in.readLine();
-                    System.out.println("Client selected option: " + clientChoice);
-
-                    if (EXIT.equalsIgnoreCase(clientChoice)) {
-                        continue; // Return to the initial menu
-                    }
-
-                    if ("participant".equalsIgnoreCase(userCategory)) {
-                        switch (clientChoice) {
-                            case REGISTER:
-                                handleRegistration(in, out, connection);
-                                break;
-                            case LOGIN:
-                                handleLogin(in, out, connection);
-                                break;
-                            default:
-                                out.println("Invalid option selected.");
-                        }
-                    } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
-                        switch (clientChoice) {
-                            case REPLOGIN:
-                            handleRepLogin(in, out, connection);
-                                break;
-                            default:
-                                out.println("Invalid option selected.");
-                        }
-                    }
+                    handleClientSession(in, out, connection);
 
                 } catch (IOException e) {
                     System.err.println("Error: " + e.getMessage());
@@ -110,6 +70,68 @@ public class Server {
             }
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
+        }
+    }
+
+    private static void handleClientSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        while (true) {
+            displayInitialMenu(out);
+
+            String userCategory = in.readLine();
+            System.out.println("User category selected: " + userCategory);
+
+            if ("participant".equalsIgnoreCase(userCategory)) {
+                handleParticipantSession(in, out, connection);
+            } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
+                handleRepresentativeSession(in, out, connection);
+            } else {
+                out.println("Invalid user category selected.");
+            }
+        }
+    }
+
+    private static void handleParticipantSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        while (true) {
+            displayParticipantMenu(out);
+
+            String clientChoice = in.readLine();
+            System.out.println("Client selected option: " + clientChoice);
+
+            if (EXIT.equalsIgnoreCase(clientChoice)) {
+                break; // Return to the initial menu
+            }
+
+            switch (clientChoice) {
+                case REGISTER:
+                    handleRegistration(in, out, connection);
+                    break;
+                case LOGIN:
+                    handleLogin(in, out, connection);
+                    break;
+                default:
+                    out.println("Invalid option selected.");
+            }
+        }
+    }
+
+    private static void handleRepresentativeSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        while (true) {
+            displayRepresentativeMenu(out);
+
+            String clientChoice = in.readLine();
+            System.out.println("Client selected option: " + clientChoice);
+
+            if (EXIT.equalsIgnoreCase(clientChoice)) {
+                break; // Return to the initial menu
+            }
+
+            switch (clientChoice) {
+                case REPLOGIN:
+                    handleRepLogin(in, out, connection);
+                    break;
+                default:
+                    out.println("Invalid option selected.");
+            }
         }
     }
     private static void displayInitialMenu(PrintWriter out) {
