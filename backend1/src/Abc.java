@@ -1040,7 +1040,7 @@ public class Abc {
         }
     }
     
-    private static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
+    public static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
         try {
             out.println("\nPlease enter your choice (confirm yes <username> or confirm no <username>):");
             out.flush(); // Ensure the prompt is sent immediately
@@ -1065,66 +1065,59 @@ public class Abc {
             String username = parts[2];
     
             File inputFile = new File("registration_details.txt");
-            File tempFile = new File("registration_details_temp.txt");
+            List<String> fileContents = new ArrayList<>();
+            String applicantDetails = null;
     
-            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-    
+            // Read the file contents into a list
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
                 String currentLine;
-                boolean userFound = false;
-                String applicantDetails = null;
-    
-                // Read each line from the input file
                 while ((currentLine = reader.readLine()) != null) {
                     if (currentLine.contains(username)) {
                         applicantDetails = currentLine;
-                        userFound = true;
-                        // Skip writing the found line to the temp file (effectively removing it)
                         continue;
                     }
-                    // Write all lines except the found applicant's details to the temp file
-                    writer.write(currentLine + System.lineSeparator());
-                }
-    
-                if (!userFound) {
-                    out.println("Applicant not found.");
-                    out.flush();
-                    return;
-                }
-    
-                // Extract email address from applicantDetails
-                String emailAddress = applicantDetails.split(",")[3]; // Assuming emailAddress is in the 4th position
-    
-                // Insert the applicant details into the database
-                if (applicantDetails != null) {
-                    if (action.equals("yes")) {
-                        insertIntoDatabase(connection, "participants", applicantDetails);
-                        out.println("Applicant confirmed and added to participants.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations!" +username+ ", \nYour application has been accepted.");
-                    } else if (action.equals("no")) {
-                        insertIntoDatabase(connection, "rejected", applicantDetails);
-                        out.println("Applicant rejected and added to rejected.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " +username+ ", \nWe regret to inform you that your application has been rejected.");
-                    }
-                    out.flush();
-                }
-    
-                // Replace the original file with the updated temp file
-                if (!inputFile.delete()) {
-                    out.println("Failed to delete the original file.");
-                    out.flush();
-                    return;
-                }
-                if (!tempFile.renameTo(inputFile)) {
-                    out.println("Failed to rename the temp file.");
-                    out.flush();
-                    return;
+                    fileContents.add(currentLine);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                out.println("Failed to process the applicant. Please try again.");
+                out.println("Failed to read the file. Please try again.");
+                out.flush();
+                return;
+            }
+    
+            if (applicantDetails == null) {
+                out.println("Applicant not found.");
+                out.flush();
+                return;
+            }
+    
+            // Extract email address from applicantDetails
+            String emailAddress = applicantDetails.split(",")[3]; // Assuming emailAddress is in the 4th position
+    
+            // Insert the applicant details into the database
+            if (action.equals("yes")) {
+                insertIntoDatabase(connection, "participants", applicantDetails);
+                out.println("Applicant confirmed and added to participants.");
+                sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations " + username + ",\nYour application has been accepted.");
+            } else if (action.equals("no")) {
+                insertIntoDatabase(connection, "rejected", applicantDetails);
+                out.println("Applicant rejected and added to rejected.");
+                sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " + username + ",\nWe regret to inform you that your application has been rejected.");
+            }
+            out.flush();
+    
+            // Write the modified list back to the original file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile))) {
+                for (String line : fileContents) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                out.println("Failed to update the file. Please try again.");
                 out.flush();
             }
+    
         } catch (Exception e) {
             e.printStackTrace();
             out.println("An error occurred while confirming the applicant.");
