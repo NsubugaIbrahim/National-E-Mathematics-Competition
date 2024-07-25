@@ -2,7 +2,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
@@ -165,9 +166,9 @@ public class Abc {
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
-        out.println("Participant Menu (Logged In):\n");
-        out.println( VIEW_CHALLENGES );
-        out.println( ATTEMPT_CHALLENGE );
+        out.println("School Representative Menu (Logged In):\n");
+        out.println( VIEW_APPLICANTS );
+        out.println( CONFIRM_APPLICANT );
         out.println( EXIT );
         out.println("Please enter your choice:");
     }
@@ -314,7 +315,7 @@ public class Abc {
             return false;
         }
     
-        String query = "SELECT COUNT(*) FROM representatives WHERE username = ? AND password = ?";
+        String query = "SELECT COUNT(*) FROM representatives WHERE representativeName = ? AND password = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username);
             stmt.setString(2, encryptedPassword);
@@ -455,14 +456,14 @@ public class Abc {
     public static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection, int participantId, String loggedInEmail) throws IOException {
         out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
         out.flush();
-
+    
         String command = in.readLine().trim();
         if (!command.startsWith("AttemptChallenge")) {
             out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
             out.flush();
             return;
         }
-
+    
         int challengeId;
         try {
             challengeId = Integer.parseInt(command.split(" ")[1]);
@@ -471,15 +472,23 @@ public class Abc {
             out.flush();
             return;
         }
-
+    
+        // Check the number of attempts
+        int attemptCount = getAttemptCount(connection, participantId, challengeId);
+        if (attemptCount >= 3) {
+            out.println("You have reached the maximum number of attempts for this challenge.");
+            out.flush();
+            return;
+        }
+    
         // Get the current date
         LocalDate currentDate = LocalDate.now();
-
+    
         // Fetch challenge details from the database
         String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
         int numberOfQuestions = 0;
         long challengeDuration = 0;
-
+    
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, challengeId);
             pstmt.setString(2, currentDate.toString());
@@ -499,14 +508,14 @@ public class Abc {
             out.flush();
             return;
         }
-
+    
         // Get random questions based on the challenge constraints
         List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Integer, Integer> questionMarks = getQuestionMarks(correctAnswers); // New method to get marks for each question
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-
+    
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Runnable timeoutTask = () -> {
             out.println("Time's up! Sending the marking guide...");
@@ -514,30 +523,34 @@ public class Abc {
             sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
         };
         executor.schedule(timeoutTask, challengeDuration, TimeUnit.MILLISECONDS);
-
+    
         try {
             for (Questions question : challengeQuestions) {
                 long elapsed = System.currentTimeMillis() - startTime;
                 long timeRemaining = challengeDuration - elapsed;
-
+    
                 if (timeRemaining <= 0) {
                     break;
                 }
-
+    
+                // Convert time remaining to minutes and seconds
+                long minutesRemaining = timeRemaining / (1000 * 60);
+                long secondsRemaining = (timeRemaining % (1000 * 60)) / 1000;
+    
                 out.println("Remaining questions: " + (challengeQuestions.size() - userAnswers.size()));
-                out.println("Time remaining: " + timeRemaining / 1000 + " seconds");
+                out.println("Time remaining: " + minutesRemaining + " minutes " + secondsRemaining + " seconds");
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
-
+    
                 String answer = in.readLine().trim();
                 long duration = System.currentTimeMillis() - startTime;
-
+    
                 boolean isCorrect = correctAnswers.containsKey(question.getQuestionId()) &&
                                     correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer);
                 userAnswers.put(question, answer);
-
+    
                 saveAttempt(participantId, challengeId, question.getQuestionId(), isCorrect, duration, LocalDateTime.now());
-
+    
                 if (isCorrect) {
                     out.println("Correct!");
                 } else {
@@ -550,10 +563,139 @@ public class Abc {
         } finally {
             executor.shutdownNow();
         }
-
+    
+        // Calculate total score
+        int score = (int) userAnswers.entrySet().stream()
+            .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                            correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+            .mapToInt(entry -> questionMarks.get(entry.getKey().getQuestionId()))
+            .sum();
+    
+        // Determine if the challenge is completed
+        boolean completed = userAnswers.size() == numberOfQuestions;
+    
+        // Insert results into the database
+        String insertQuery = "INSERT INTO attempts_counts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, score);
+            pstmt.setInt(4, (int) userAnswers.entrySet().stream()
+                .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                                correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+                .count());
+            pstmt.setInt(5, numberOfQuestions);
+            pstmt.setBoolean(6, completed);
+            pstmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while saving the results: " + e.getMessage());
+            out.flush();
+        }
+    
+        // Generate and save the marking guide PDF
+        String username = getUsernameByParticipantId(connection, participantId);
+        generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "path/to/save/folder");
+    
         sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
+
+    private static int getAttemptCount(Connection connection, int participantId, int challengeId) {
+        String query = "SELECT COUNT(*) AS attempts_counts FROM attemptsCounts WHERE participantId = ? AND challengeId = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("attemptCount");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
     
+    private static String getUsernameByParticipantId(Connection connection, int participantId) {
+        String query = "SELECT username FROM participants WHERE participantId = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, participantId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public static void generateMarkingGuidePDF(String username, Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String folderPath) {
+    PDDocument document = new PDDocument();
+    PDPage page = new PDPage();
+    document.addPage(page);
+
+    try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+        PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
+        contentStream.setFont(customFont, 12);
+        contentStream.beginText();
+        contentStream.newLineAtOffset(25, 750);
+        contentStream.showText("Marking Guide for " + username);
+        contentStream.newLine();
+        contentStream.showText("========================================");
+        contentStream.newLine();
+        
+        int totalMarks = 0;
+        int questionIndex = 1;
+
+        for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+            Questions question = entry.getKey();
+            String userAnswer = entry.getValue();
+            String correctAnswer = correctAnswers.get(question.getQuestionId());
+            int marks = questionMarks.getOrDefault(question.getQuestionId(), 0);
+            
+            contentStream.newLine();
+            contentStream.showText("Question " + questionIndex + ": " + question.getQuestionText());
+            contentStream.newLine();
+            contentStream.showText("Your Answer: " + userAnswer);
+            contentStream.newLine();
+            contentStream.showText("Correct Answer: " + correctAnswer);
+            contentStream.newLine();
+            contentStream.showText("Marks: " + (userAnswer.equalsIgnoreCase(correctAnswer) ? marks : 0));
+            contentStream.newLine();
+            
+            if (userAnswer.equalsIgnoreCase(correctAnswer)) {
+                totalMarks += marks;
+            }
+            questionIndex++;
+        }
+
+        contentStream.newLine();
+        contentStream.showText("========================================");
+        contentStream.newLine();
+        contentStream.showText("Total Marks: " + totalMarks);
+
+        contentStream.endText();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+    // Save the document
+    File file = new File(folderPath, username + ".pdf");
+    try {
+        document.save(file);
+    } catch (IOException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            document.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
     
     private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String email) {
         int totalMarks = 0;
