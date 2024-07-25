@@ -39,6 +39,7 @@ import java.util.Base64;
 public class Server {
     private static final String REGISTER = "Register";
     private static final String LOGIN = "Login"; // New command
+    private static final String REPLOGIN = "Login";
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
@@ -95,11 +96,8 @@ public class Server {
                         }
                     } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
                         switch (clientChoice) {
-                            case VIEW_APPLICANTS:
-                                handleViewApplicants(out);
-                                break;
-                            case CONFIRM_APPLICANT:
-                                handleConfirmApplicant(out, in, connection);
+                            case REPLOGIN:
+                            handleRepLogin(in, out, connection);
                                 break;
                             default:
                                 out.println("Invalid option selected.");
@@ -123,7 +121,7 @@ public class Server {
 
     private static void displayParticipantMenu(PrintWriter out) {
         out.println("Participant Menu:\n");
-        out.println(  REGISTER );
+        out.println( REGISTER );
         out.println( LOGIN );
         out.println( EXIT );
         out.println("Please enter your choice:");
@@ -139,10 +137,17 @@ public class Server {
 
     private static void displayRepresentativeMenu(PrintWriter out) {
         out.println("School Representative's Menu:\n");
-        out.println( VIEW_APPLICANTS );
-        out.println( CONFIRM_APPLICANT );
+        out.println( REPLOGIN);
         out.println( EXIT );
         out.println("Please enter your choice:\n\n");
+    }
+
+    private static void displayRepLoggedInMenu(PrintWriter out) {
+        out.println("Participant Menu (Logged In):\n");
+        out.println( VIEW_CHALLENGES );
+        out.println( ATTEMPT_CHALLENGE );
+        out.println( EXIT );
+        out.println("Please enter your choice:");
     }
 
     private static void handleLogin(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
@@ -242,6 +247,64 @@ public class Server {
             System.err.println("Error retrieving email: " + e.getMessage());
         }
         return "";
+    }
+
+    private static void handleRepLogin(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+        out.println("Enter your username:");
+        String username = in.readLine();
+        out.println("Enter your password:");
+        String password = in.readLine();
+
+        boolean isAuthenticated = repauthenticate(username, password, connection);
+
+        if (isAuthenticated) {
+            
+            out.println("Login successful!");
+            displayRepLoggedInMenu(out);
+
+            String clientChoice = in.readLine();
+            System.out.println("Client selected option: " + clientChoice);
+    
+            switch (clientChoice) {
+                case VIEW_APPLICANTS:
+                    handleViewApplicants(out);
+                    break;
+                case CONFIRM_APPLICANT:
+                    handleConfirmApplicant(out, in, connection);
+                    break;
+                case EXIT:
+                    // Do nothing, will return to the initial menu
+                    break;    
+                default:
+                    out.println("Invalid option selected.");
+            }
+        } else {
+            out.println("Login failed. Invalid username or password.");
+        }
+    }
+
+    private static boolean repauthenticate(String username, String password, Connection connection) {
+        String encryptedPassword;
+        try {
+            encryptedPassword = encryptPassword(password);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
+    
+        String query = "SELECT COUNT(*) FROM representatives WHERE representativeName = ? AND password = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.setString(2, encryptedPassword);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
      private static void handleRegistration(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
