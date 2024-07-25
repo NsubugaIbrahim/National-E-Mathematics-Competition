@@ -474,7 +474,16 @@ public class Abc {
         }
     
         // Check the number of attempts
-        int attemptCount = getAttemptCount(connection, participantId, challengeId);
+                    int attemptCount;
+            try {
+                attemptCount = getAttemptCount(connection, participantId, challengeId);
+            } catch (SQLException e) {
+                // Handle the exception here
+                out.println("An error occurred while retrieving the attempt count.");
+                out.flush();
+                return;
+            }
+
         if (attemptCount >= 3) {
             out.println("You have reached the maximum number of attempts for this challenge.");
             out.flush();
@@ -575,7 +584,7 @@ public class Abc {
         boolean completed = userAnswers.size() == numberOfQuestions;
     
         // Insert results into the database
-        String insertQuery = "INSERT INTO attempts_counts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO attemptsCounts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
             pstmt.setInt(1, participantId);
             pstmt.setInt(2, challengeId);
@@ -596,25 +605,25 @@ public class Abc {
     
         // Generate and save the marking guide PDF
         String username = getUsernameByParticipantId(connection, participantId);
-        generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "path/to/save/folder");
+        generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "C:/xampp/htdocs/National-E-Mathematics-Competition/backend1/src/pdf");
     
         sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
 
-    private static int getAttemptCount(Connection connection, int participantId, int challengeId) {
-        String query = "SELECT COUNT(*) AS attempts_counts FROM attemptsCounts WHERE participantId = ? AND challengeId = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setInt(1, participantId);
-            pstmt.setInt(2, challengeId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("attemptCount");
+    private static int getAttemptCount(Connection connection, int participantId, int challengeId) throws SQLException {
+        String query = "SELECT COUNT(*) AS attemptCount FROM attemptsCounts WHERE participantId = ? AND challengeId = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, participantId);
+            preparedStatement.setInt(2, challengeId);
+    
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("attemptCount");
+                } else {
+                    return 0; // No attempts found
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return 0;
     }
     
     private static String getUsernameByParticipantId(Connection connection, int participantId) {
