@@ -22,7 +22,7 @@
 </head>
 <div class="sidebar">
     <div class="sidebar-wrapper">
-        <div class="logo1"><img src="{{ asset('black/img/logo23.png') }}" alt="Logo" width="200" height="90"></div>
+        <div class="logo1"><img src="{{ asset('black/img/logo12.png') }}" alt="Logo" width="200" height="90"></div>
         <div class="logo">
             <a href="#" class="simple-text logo-mini">{{ __('') }}</a>
             <a href="#" class="simple-text logo-normal">{{ __('') }}</a>
