@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
@@ -553,6 +554,36 @@ public class Server {
             e.printStackTrace();
         } finally {
             executor.shutdownNow();
+        }
+
+                // Calculate total score
+            int score = (int) userAnswers.entrySet().stream()
+            .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                            correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+            .mapToInt(entry -> questionMarks.get(entry.getKey().getQuestionId()))
+            .sum();
+
+        // Determine if the challenge is completed
+        boolean completed = userAnswers.size() == numberOfQuestions;
+
+        // Insert results into the database
+        String insertQuery = "INSERT INTO results (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, score);
+            pstmt.setInt(4, (int) userAnswers.entrySet().stream()
+                .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                                correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+                .count());
+            pstmt.setInt(5, numberOfQuestions);
+            pstmt.setBoolean(6, completed);
+            pstmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while saving the results: " + e.getMessage());
+            out.flush();
         }
 
         sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
