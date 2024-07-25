@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import javax.activation.DataSource;
 import java.util.Base64;
 
-public class Server {
+public class Abc {
     private static final String REGISTER = "Register";
     private static final String LOGIN = "Login"; // New command
     private static final String REPLOGIN = "Login";
@@ -165,9 +165,9 @@ public class Server {
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
-        out.println("School Representative Menu (Logged In):\n");
-        out.println( VIEW_APPLICANTS );
-        out.println( CONFIRM_APPLICANT );
+        out.println("Participant Menu (Logged In):\n");
+        out.println( VIEW_CHALLENGES );
+        out.println( ATTEMPT_CHALLENGE );
         out.println( EXIT );
         out.println("Please enter your choice:");
     }
@@ -314,7 +314,7 @@ public class Server {
             return false;
         }
     
-        String query = "SELECT COUNT(*) FROM representatives WHERE representativeName = ? AND password = ?";
+        String query = "SELECT COUNT(*) FROM representatives WHERE username = ? AND password = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username);
             stmt.setString(2, encryptedPassword);
