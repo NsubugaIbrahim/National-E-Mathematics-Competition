@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Challenge;
+use PDO; //import PDO
 
 class ChallengesController extends Controller
 {
@@ -12,24 +12,24 @@ class ChallengesController extends Controller
         $this->middleware('auth');      
     }
     
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Collect form data
-            $numberOfQuestions = $_POST['no_questions'] ?? 'default_value';
+            $numberOfQuestions = $_POST['no_questions'] ?? 'default_value'; //null coalescing operator ?? to check if the ‘no_questions’ key exists before accessing it
             $duration = $_POST['duration'];
             $startDate = $_POST['start'];
             $endDate = $_POST['end'];
-    
-            // Create a new Challenge instance and set the attributes
-            $challenge = new Challenge();
-            $challenge->numberOfQuestions = $numberOfQuestions;
-            $challenge->duration = $duration;
-            $challenge->startDate = $startDate;
-            $challenge->endDate = $endDate;
-            $challenge->save(); // Save the model to the database
-    
+            
+            // Database connection
+            $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
+        
+            // SQL query
+            $sql = "INSERT INTO challenges(numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(array($numberOfQuestions, $duration, $startDate, $endDate));
+           
             // Redirect to the success_page route
+            // return redirect()->away('http://localhost:8000/success_page.php');
             return redirect()->back()->with('status', 'Challenge has been successfully created and uploaded to the database');
         }
     }

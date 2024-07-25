@@ -208,10 +208,7 @@ Route::post('/api/attempts', [App\Http\Controllers\AttemptController::class, 'st
 //Analytics
 Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analytics'])->name('analytics');
 
-
-
 //Graphs
 Route::get('/home', [GraphsController::class, 'index'])->name('home');
-
 
 Route::get('/top-participants', [BesttwoController::class, 'getTopParticipants']);

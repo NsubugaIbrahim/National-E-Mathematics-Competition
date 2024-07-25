@@ -11,8 +11,10 @@ class BesttwoController extends Controller
     {
         // Fetch the top 2 participants with the highest average scores across their attempted challenges
         $topParticipants = DB::table('results')
-            ->select('participantId', DB::raw('AVG(score) as average_score'))
-            ->groupBy('participantId')
+            ->join('participants', 'results.participantId', '=', 'participants.participantId')
+            ->join('schools', 'participants.schoolRegno', '=', 'schools.schoolRegNo')
+            ->select('participants.username', 'schools.schoolName', 'results.participantId', DB::raw('AVG(results.score) as average_score'))
+            ->groupBy('results.participantId', 'participants.username', 'schools.schoolName')
             ->orderBy('average_score', 'desc')
             ->limit(2)
             ->get();
