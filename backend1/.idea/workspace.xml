@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7a859c92-813f-46ac-96cb-f49d22d278ff" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../app/Http/Controllers/BesttwoController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/Http/Controllers/BesttwoController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Marking_Guide.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Marking_Guide.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$2.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$3.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server$Challenge.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server$Challenge.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/Server.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/backend1/registration_details.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/backend1/registration_details.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../public/participant-images" beforeDir="false" afterPath="$PROJECT_DIR$/../public/participant-images" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../resources/views/top_participants.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/../resources/views/top_participants.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/../routes/web.php" afterDir="false" />
-    </list>
+    <list default="true" id="86a54442-fd0a-402f-9d44-5d08cdf1c08e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
