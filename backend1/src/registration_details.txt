@@ -1,9 +1,6 @@
-krahim,Kayiwa,Rahim,kayiwarahim@gmail.com,Admin@1234,2003-03-26,23/U/09499/EVE,saved_images\profileblue.jpg
-snamembwa,Namembwa,Sherry,snamembwa@gmail.com,Admin@1234,2003-08-26,23/U/14586/EVE,saved_images\profileblue.jpg
-jnakalema,Nakalema,Julian,julianakalema3@gmail.com,Admin@1234,2003-01-26,23/U/13388/EVE,saved_images\profileblue.jpg
-awalusimbi,Walusimbi,Ashraf,ashrafwalusimbi364@gmail.com,Admin@1234,2003-11-26,23/U/18466/EVE,saved_images\profileblue.jpg
-nazel,Nsubuga,Ibrahim,ibrahimnazel942@gmail.com,Admin@1234,1999-01-26,23/U/24436/EVE,saved_images\profileblue.jpg
-srahman,Ssebuliba,Rahman,ssebulibaabdulrahman@gmail.com,Admin@1234,2006-07-01,23/U/18466/EVE,saved_images\profileblue.jpg
-krahim,Kayiwa,Rahim,kayiwarahim@gmail.com,vHjljVXN4TRuaPjl/liN7fYvpFeqZGpQClM0f6/27iQ=,2003-03-26,23/U/09499/EVE,saved_images\profileblue.jpg
-krahim,Kayiwa,Rahim,kayiwarahim@gmail.com,vHjljVXN4TRuaPjl/liN7fYvpFeqZGpQClM0f6/27iQ=,2003-03-26,1234,saved_images\profileblue.jpg
-krahim,Kayiwa,Rahim,kayiwarahim@gmail.com,vHjljVXN4TRuaPjl/liN7fYvpFeqZGpQClM0f6/27iQ=,2003-03-26,1234,saved_images\profileblue.jpg
+snamembwa,Namembwa,Sherry,snamembwa@gmail.com,Admin@1234,2003-08-26,1234,saved_images\profileblue.jpg
+jnakalema,Nakalema,Julian,julianakalema3@gmail.com,Admin@1234,2003-01-26,1234,saved_images\profileblue.jpg
+awalusimbi,Walusimbi,Ashraf,ashrafwalusimbi364@gmail.com,Admin@1234,2003-11-26,1234,saved_images\profileblue.jpg
+nazel,Nsubuga,Ibrahim,ibrahimnazel942@gmail.com,Admin@1234,1999-01-26,1234,saved_images\profileblue.jpg
+srahman,Ssebuliba,Rahman,ssebulibaabdulrahman@gmail.com,Admin@1234,2006-07-01,1234,saved_images\profileblue.jpg
+
