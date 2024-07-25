@@ -584,8 +584,28 @@ public class Abc {
         boolean completed = userAnswers.size() == numberOfQuestions;
     
         // Insert results into the database
-        String insertQuery = "INSERT INTO attemptsCounts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
+        String insertQuery1 = "INSERT INTO attemptsCounts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery1)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, score);
+            pstmt.setInt(4, (int) userAnswers.entrySet().stream()
+                .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                                correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+                .count());
+            pstmt.setInt(5, numberOfQuestions);
+            pstmt.setBoolean(6, completed);
+            pstmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while saving the results: " + e.getMessage());
+            out.flush();
+        }
+
+        // Insert results into the database
+        String insertQuery2 = "INSERT INTO results (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery2)) {
             pstmt.setInt(1, participantId);
             pstmt.setInt(2, challengeId);
             pstmt.setInt(3, score);
@@ -607,7 +627,7 @@ public class Abc {
         String username = getUsernameByParticipantId(connection, participantId);
         generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "C:/xampp/htdocs/National-E-Mathematics-Competition/backend1/src/pdf");
     
-        sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
+        //sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
     }
 
     private static int getAttemptCount(Connection connection, int participantId, int challengeId) throws SQLException {
@@ -642,69 +662,91 @@ public class Abc {
     }
 
     public static void generateMarkingGuidePDF(String username, Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String folderPath) {
-    PDDocument document = new PDDocument();
-    PDPage page = new PDPage();
-    document.addPage(page);
-
-    try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-        PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
-        contentStream.setFont(customFont, 12);
-        contentStream.beginText();
-        contentStream.newLineAtOffset(25, 750);
-        contentStream.showText("Marking Guide for " + username);
-        contentStream.newLine();
-        contentStream.showText("========================================");
-        contentStream.newLine();
-        
-        int totalMarks = 0;
-        int questionIndex = 1;
-
-        for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
-            Questions question = entry.getKey();
-            String userAnswer = entry.getValue();
-            String correctAnswer = correctAnswers.get(question.getQuestionId());
-            int marks = questionMarks.getOrDefault(question.getQuestionId(), 0);
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+    
+        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            // Load the custom font
+            PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
             
-            contentStream.newLine();
-            contentStream.showText("Question " + questionIndex + ": " + question.getQuestionText());
-            contentStream.newLine();
-            contentStream.showText("Your Answer: " + userAnswer);
-            contentStream.newLine();
-            contentStream.showText("Correct Answer: " + correctAnswer);
-            contentStream.newLine();
-            contentStream.showText("Marks: " + (userAnswer.equalsIgnoreCase(correctAnswer) ? marks : 0));
-            contentStream.newLine();
+            // Set font and font size
+            contentStream.setFont(customFont, 12);
             
-            if (userAnswer.equalsIgnoreCase(correctAnswer)) {
-                totalMarks += marks;
+            // Begin text
+            contentStream.beginText();
+            contentStream.newLineAtOffset(25, 750);
+            contentStream.showText("Marking Guide for " + username);
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            contentStream.showText("========================================");
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            
+            int totalMarks = 0;
+            int questionIndex = 1;
+    
+            for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+                Questions question = entry.getKey();
+                String userAnswer = entry.getValue();
+                int questionId = question.getQuestionId();
+                String correctAnswer = correctAnswers.get(questionId);
+                int marks = questionMarks.getOrDefault(questionId, 0);
+                
+                contentStream.showText("Question " + questionIndex + ": " + question.getQuestionText());
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                contentStream.showText("Your Answer: " + userAnswer);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                contentStream.showText("Correct Answer: " + correctAnswer);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+    
+                int awardedMarks = 0;
+                if (userAnswer.equals("-") || userAnswer.equals("negative")) {
+                    // Participant is not sure, award 0 marks
+                    awardedMarks = 0;
+                } else if (correctAnswer != null && correctAnswer.equalsIgnoreCase(userAnswer)) {
+                    // Correct answer, award specific marks for the question
+                    awardedMarks = marks;
+                } else {
+                    // Wrong answer, deduct 3 marks
+                    awardedMarks = -3;
+                }
+                totalMarks += awardedMarks;
+    
+                contentStream.showText("Marks: " + awardedMarks);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                questionIndex++;
             }
-            questionIndex++;
-        }
-
-        contentStream.newLine();
-        contentStream.showText("========================================");
-        contentStream.newLine();
-        contentStream.showText("Total Marks: " + totalMarks);
-
-        contentStream.endText();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-
-    // Save the document
-    File file = new File(folderPath, username + ".pdf");
-    try {
-        document.save(file);
-    } catch (IOException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            document.close();
+    
+            contentStream.showText("========================================");
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            contentStream.showText("Total Marks: " + totalMarks);
+    
+            // End text
+            contentStream.endText();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    
+        // Save the document
+        File file = new File(folderPath, username + ".pdf");
+        try {
+            document.save(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                document.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
-}
     
     private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String email) {
         int totalMarks = 0;
@@ -731,7 +773,7 @@ public class Abc {
     
         // Create PDF marking guide
         try {
-            createPdfMarkingGuide(userAnswers, correctAnswers, totalMarks);
+            
             sendEmailWithAttachment(email, "Marking Guide", "Please find your marking guide attached.", "marking_guide.pdf");
         } catch (Exception e) {
             e.printStackTrace();
@@ -766,47 +808,7 @@ public class Abc {
     }
     
 
-    private static void createPdfMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks) throws IOException {
-        try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage();
-            document.addPage(page);
-
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
-                contentStream.beginText();
-                contentStream.setFont(customFont, 12);
-                contentStream.setLeading(14.5f);
-                contentStream.newLineAtOffset(25, 700);
-
-                contentStream.showText("Marking Guide");
-                contentStream.newLine();
-                contentStream.newLine();
-                contentStream.showText("Total Marks: " + totalMarks);
-                contentStream.newLine();
-
-                int questionNumber = 1;
-                for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
-                    Questions question = entry.getKey();
-                    String userAnswer = entry.getValue();
-                    String correctAnswer = correctAnswers.get(question.getQuestionId());
-
-                    contentStream.showText("Question        " + questionNumber + ": " + question.getQuestionText());
-                    contentStream.newLine();
-                    contentStream.showText("Your Answer:    " + userAnswer);
-                    contentStream.newLine();
-                    contentStream.showText("Correct Answer: " + correctAnswer);
-                    contentStream.newLine();
-                    contentStream.newLine();
-
-                    questionNumber++;
-                }
-
-                contentStream.endText();
-            }
-
-            document.save("marking_guide.pdf");
-        }
-    }
+    
 
     private static void sendEmailWithAttachment(String to, String subject, String body, String filePath) throws UnsupportedEncodingException {
         String from = "tgnsystemslimited@gmail.com";

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use PDO;
 use App\Models\Challenge;
 
 class ChallengesController extends Controller
@@ -22,7 +24,7 @@ class ChallengesController extends Controller
             $endDate = $_POST['end'];
             
             // Database connection
-            $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
+            $pdo = new PDO('mysql:host=localhost;dbname=mathchallenge', 'root', '');
         
             // SQL query
             $sql = "INSERT INTO challenges(numberOfQuestions, duration, startDate, endDate ) VALUES (?, ?, ?, ?)";

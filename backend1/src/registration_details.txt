@@ -1,4 +1,3 @@
-jnakalema,Nakalema,Julian,julianakalema3@gmail.com,Admin@1234,2003-01-26,1234,saved_images\profileblue.jpg
 awalusimbi,Walusimbi,Ashraf,ashrafwalusimbi364@gmail.com,Admin@1234,2003-11-26,1234,saved_images\profileblue.jpg
 nazel,Nsubuga,Ibrahim,ibrahimnazel942@gmail.com,Admin@1234,1999-01-26,1234,saved_images\profileblue.jpg
 srahman,Ssebuliba,Rahman,ssebulibaabdulrahman@gmail.com,Admin@1234,2006-07-01,1234,saved_images\profileblue.jpg
