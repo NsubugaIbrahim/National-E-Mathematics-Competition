@@ -652,7 +652,7 @@ public class Server {
         //sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
 
         out.println("Your score: " + score);
-        out.println("Completed: " + completed);
+        out.println("Completed: " + completed+"\n\n\n\n");
         out.flush();
         displayParticipantLoggedInMenu(out);
 
