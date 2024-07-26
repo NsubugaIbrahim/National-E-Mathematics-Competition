@@ -31,37 +31,46 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.activation.DataSource;
 import java.util.Base64;
 
 public class Server {
-    private static final String REGISTER = "Register";
-    private static final String LOGIN = "Login"; // New command
-    private static final String REPLOGIN = "Login";
+    private static final String REGISTER = "Register"; // Register
+    private static final String LOGIN = "Login"; // Login option for participant
+    private static final String REPLOGIN = "Login"; // Login option for representative
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
-    private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
-    private static final String IMAGE_FOLDER = "saved_images/";
+    private static final String VIEW_APPLICANTS = "ViewApplicants";
+    private static final String LOGOUT = "Logout";
+    private static final String BACK = "Back";
+    private static final String IMAGE_FOLDER = "saved_images/"; //folder for saving the applicants photos
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
-    private static final String EXIT = "Exit"; // Exit command
+    private static final String EXIT = "Exit";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
     private static final String PASS = "";
     private static String loggedInEmail;
 
     public static void main(String[] args) throws SQLException {
+        // start the server
         try (ServerSocket serverSocket = new ServerSocket(6666);
+        // connect to the database
              Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
             System.out.println("\n\nWelcome to the Competition!\n");
 
             while (true) {
+                // accept client connections
                 try (Socket socket = serverSocket.accept();
+                    // read input from client
                      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                     // write output to client
                      PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
                     System.out.println("Client connected...");
+                    
                     handleClientSession(in, out, connection);
 
                 } catch (IOException e) {
@@ -76,14 +85,18 @@ public class Server {
     private static void handleClientSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayInitialMenu(out);
-
+    
+            // read input from client
             String userCategory = in.readLine();
             System.out.println("User category selected: " + userCategory);
-
+    
             if ("participant".equalsIgnoreCase(userCategory)) {
                 handleParticipantSession(in, out, connection);
             } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
                 handleRepresentativeSession(in, out, connection);
+            } else if (EXIT.equalsIgnoreCase(userCategory)) {
+                System.out.println("Exiting the server...");
+                break; // Exit the server
             } else {
                 out.println("Invalid user category selected.");
             }
@@ -93,14 +106,15 @@ public class Server {
     private static void handleParticipantSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayParticipantMenu(out);
-
+    
+            // read input from client
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
-
+    
             if (EXIT.equalsIgnoreCase(clientChoice)) {
                 break; // Return to the initial menu
             }
-
+    
             switch (clientChoice) {
                 case REGISTER:
                     handleRegistration(in, out, connection);
@@ -117,14 +131,14 @@ public class Server {
     private static void handleRepresentativeSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayRepresentativeMenu(out);
-
+    
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
-
-            if (EXIT.equalsIgnoreCase(clientChoice)) {
+    
+            if (BACK.equalsIgnoreCase(clientChoice)) {
                 break; // Return to the initial menu
             }
-
+    
             switch (clientChoice) {
                 case REPLOGIN:
                     handleRepLogin(in, out, connection);
@@ -137,38 +151,41 @@ public class Server {
     private static void displayInitialMenu(PrintWriter out) {
         out.println("\nWhich user category are you?\n");
         out.println("participant");
-        out.println("schoolrepresentative\n");
+        out.println("schoolrepresentative");
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:\n");
     }
 
     private static void displayParticipantMenu(PrintWriter out) {
         out.println("Participant Menu:\n");
-        out.println( REGISTER );
-        out.println( LOGIN );
-        out.println( EXIT );
+        out.println(REGISTER);
+        out.println(LOGIN);
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
     private static void displayParticipantLoggedInMenu(PrintWriter out) {
         out.println("Participant Menu (Logged In):\n");
-        out.println( VIEW_CHALLENGES );
-        out.println( ATTEMPT_CHALLENGE );
-        out.println( EXIT );
+        out.println(VIEW_CHALLENGES);
+        out.println(ATTEMPT_CHALLENGE);
+        out.println(LOGOUT); // Add LOGOUT option
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
     private static void displayRepresentativeMenu(PrintWriter out) {
         out.println("School Representative's Menu:\n");
-        out.println( REPLOGIN);
-        out.println( EXIT );
+        out.println(REPLOGIN);
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:\n\n");
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
         out.println("School Representative Menu (Logged In):\n");
-        out.println( VIEW_APPLICANTS );
-        out.println( CONFIRM_APPLICANT );
-        out.println( EXIT );
+        out.println(VIEW_APPLICANTS);
+        out.println(CONFIRM_APPLICANT);
+        out.println(LOGOUT); // Add BACK option
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
@@ -203,11 +220,14 @@ public class Server {
                         out.flush();
                     }
                     break;
-                case EXIT:
-                    // Do nothing, will return to the initial menu
-                    break;
-                default:
-                    out.println("Invalid option selected.");
+                    case LOGOUT:
+                        out.println("Logging out...");
+                        return; // Return to the participant menu
+                    case EXIT:
+                        // Do nothing, will return to the initial menu
+                        break;
+                    default:
+                        out.println("Invalid option selected.");
             }
         } else {
             out.println("Login failed. Invalid username or password.");
@@ -295,7 +315,7 @@ public class Server {
                     handleConfirmApplicant(out, in, connection);
                     break;
                 case EXIT:
-                    // Do nothing, will return to the initial menu
+                    //return to the initial menu
                     break;    
                 default:
                     out.println("Invalid option selected.");
@@ -330,7 +350,7 @@ public class Server {
     }
 
      private static void handleRegistration(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
-            out.println("Please enter your details in the format: username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
+            out.println("Please enter your details in the format:Register username firstname lastname emailAddress password date_of_birth school_reg_no image_path");
 
             String registrationDetails = in.readLine();
             System.out.println("Registration details received: " + registrationDetails);
@@ -413,6 +433,7 @@ public class Server {
             }
      }
 
+     //verifying if the school registration number is among the registered schools
      private static boolean isSchoolRegNoValid(String schoolRegno, Connection connection) {
         String query = "SELECT 1 FROM schools WHERE schoolRegNo = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -425,13 +446,14 @@ public class Server {
             return false;
         }
     }
-
+    //Encrypts the password
     private static String encryptPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(password.getBytes());
         return Base64.getEncoder().encodeToString(hash);
     }
     
+    //saves attempts into attempts table
     private static void saveAttempt(int participantId, int challengeId, int questionId, boolean isCorrect, long duration, LocalDateTime attemptedAt) {
         String query = "INSERT INTO attempts (participantId, challengeId, questionId, isCorrect, duration, attemptedAt, created_at, updated_at) " +
                        "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
@@ -452,17 +474,18 @@ public class Server {
         }
     }
 
+    //handles the challenge
     public static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection, int participantId, String loggedInEmail) throws IOException {
         out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
         out.flush();
-
+    
         String command = in.readLine().trim();
         if (!command.startsWith("AttemptChallenge")) {
             out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
             out.flush();
             return;
         }
-
+    
         int challengeId;
         try {
             challengeId = Integer.parseInt(command.split(" ")[1]);
@@ -471,15 +494,32 @@ public class Server {
             out.flush();
             return;
         }
+    
+        // Check the number of attempts
+            int attemptCount;
+            try {
+                attemptCount = getAttemptCount(connection, participantId, challengeId);
+            } catch (SQLException e) {
+                // Handle the exception here
+                out.println("An error occurred while retrieving the attempt count.");
+                out.flush();
+                return;
+            }
 
+        if (attemptCount >= 3) {
+            out.println("You have reached the maximum number of attempts for this challenge.");
+            out.flush();
+            return;
+        }
+    
         // Get the current date
         LocalDate currentDate = LocalDate.now();
-
+    
         // Fetch challenge details from the database
         String query = "SELECT numberOfQuestions, duration FROM challenges WHERE challengeId = ? AND ? BETWEEN startDate AND endDate";
         int numberOfQuestions = 0;
         long challengeDuration = 0;
-
+    
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, challengeId);
             pstmt.setString(2, currentDate.toString());
@@ -499,14 +539,14 @@ public class Server {
             out.flush();
             return;
         }
-
+    
         // Get random questions based on the challenge constraints
         List<Questions> challengeQuestions = getRandomQuestions(numberOfQuestions);
         Map<Integer, String> correctAnswers = getCorrectAnswers(challengeQuestions);
         Map<Integer, Integer> questionMarks = getQuestionMarks(correctAnswers); // New method to get marks for each question
         Map<Questions, String> userAnswers = new HashMap<>();
         long startTime = System.currentTimeMillis();
-
+    
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Runnable timeoutTask = () -> {
             out.println("Time's up! Sending the marking guide...");
@@ -514,30 +554,34 @@ public class Server {
             sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
         };
         executor.schedule(timeoutTask, challengeDuration, TimeUnit.MILLISECONDS);
-
+    
         try {
             for (Questions question : challengeQuestions) {
                 long elapsed = System.currentTimeMillis() - startTime;
                 long timeRemaining = challengeDuration - elapsed;
-
+    
                 if (timeRemaining <= 0) {
                     break;
                 }
-
+    
+                // Convert time remaining to minutes and seconds
+                long minutesRemaining = timeRemaining / (1000 * 60);
+                long secondsRemaining = (timeRemaining % (1000 * 60)) / 1000;
+    
                 out.println("Remaining questions: " + (challengeQuestions.size() - userAnswers.size()));
-                out.println("Time remaining: " + timeRemaining / 1000 + " seconds");
+                out.println("Time remaining: " + minutesRemaining + " minutes " + secondsRemaining + " seconds");
                 out.println("Question: " + question.getQuestionText());
                 out.flush();
-
+    
                 String answer = in.readLine().trim();
                 long duration = System.currentTimeMillis() - startTime;
-
+    
                 boolean isCorrect = correctAnswers.containsKey(question.getQuestionId()) &&
                                     correctAnswers.get(question.getQuestionId()).equalsIgnoreCase(answer);
                 userAnswers.put(question, answer);
-
+    
                 saveAttempt(participantId, challengeId, question.getQuestionId(), isCorrect, duration, LocalDateTime.now());
-
+    
                 if (isCorrect) {
                     out.println("Correct!");
                 } else {
@@ -550,11 +594,186 @@ public class Server {
         } finally {
             executor.shutdownNow();
         }
+    
+        // Calculate total score
+        int score = (int) userAnswers.entrySet().stream()
+            .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                            correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+            .mapToInt(entry -> questionMarks.get(entry.getKey().getQuestionId()))
+            .sum();
+    
+        // Determine if the challenge is completed
+        boolean completed = userAnswers.size() == numberOfQuestions;
+    
+        // Insert results into the attemptsCounts table
+        String insertQuery1 = "INSERT INTO attemptsCounts (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery1)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, score);
+            pstmt.setInt(4, (int) userAnswers.entrySet().stream()
+                .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                                correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+                .count());
+            pstmt.setInt(5, numberOfQuestions);
+            pstmt.setBoolean(6, completed);
+            pstmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while saving the results: " + e.getMessage());
+            out.flush();
+        }
 
-        sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
+        // Insert results into the results table
+        String insertQuery2 = "INSERT INTO results (participantId, challengeId, score, correctAnswers, totalQuestions, completed, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery2)) {
+            pstmt.setInt(1, participantId);
+            pstmt.setInt(2, challengeId);
+            pstmt.setInt(3, score);
+            pstmt.setInt(4, (int) userAnswers.entrySet().stream()
+                .filter(entry -> correctAnswers.containsKey(entry.getKey().getQuestionId()) &&
+                                correctAnswers.get(entry.getKey().getQuestionId()).equalsIgnoreCase(entry.getValue()))
+                .count());
+            pstmt.setInt(5, numberOfQuestions);
+            pstmt.setBoolean(6, completed);
+            pstmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("An error occurred while saving the results: " + e.getMessage());
+            out.flush();
+        }
+    
+        // Generate and save the marking guide PDF to the set folder path
+        String username = getUsernameByParticipantId(connection, participantId);
+        generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "C:/xampp/htdocs/National-E-Mathematics-Competition/backend1/src/pdf");
+    
+        //sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
+    }
+
+    // Generate and save the marking guide PDF
+    public static void generateMarkingGuidePDF(String username, Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String folderPath) {
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+    
+        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            // Load the custom font
+            PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
+            
+            // Set font and font size
+            contentStream.setFont(customFont, 12);
+            
+            // Begin text
+            contentStream.beginText();
+            contentStream.newLineAtOffset(25, 750);
+            contentStream.showText("Marking Guide for " + username);
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            contentStream.showText("========================================");
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            
+            int totalMarks = 0;
+            int questionIndex = 1;
+    
+            for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
+                Questions question = entry.getKey();
+                String userAnswer = entry.getValue();
+                int questionId = question.getQuestionId();
+                String correctAnswer = correctAnswers.get(questionId);
+                int marks = questionMarks.getOrDefault(questionId, 0);
+                
+                contentStream.showText("Question " + questionIndex + ": " + question.getQuestionText());
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                contentStream.showText("Your Answer: " + userAnswer);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                contentStream.showText("Correct Answer: " + correctAnswer);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+    
+                int awardedMarks = 0;
+                if (userAnswer.equals("-") || userAnswer.equals("negative")) {
+                    // Participant is not sure, award 0 marks
+                    awardedMarks = 0;
+                } else if (correctAnswer != null && correctAnswer.equalsIgnoreCase(userAnswer)) {
+                    // Correct answer, award specific marks for the question
+                    awardedMarks = marks;
+                } else {
+                    // Wrong answer, deduct 3 marks
+                    awardedMarks = -3;
+                }
+                totalMarks += awardedMarks;
+    
+                contentStream.showText("Marks: " + awardedMarks);
+                contentStream.newLine();
+                contentStream.newLineAtOffset(0, -20); // Move down for the next line
+                questionIndex++;
+            }
+    
+            contentStream.showText("========================================");
+            contentStream.newLine();
+            contentStream.newLineAtOffset(0, -20); // Move down for the next line
+            contentStream.showText("Total Marks: " + totalMarks);
+    
+            // End text
+            contentStream.endText();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    
+        // Save the document with participant name for easy identification
+        File file = new File(folderPath, username + ".pdf");
+        try {
+            document.save(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                document.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Get the number of attempts for a participant on a given challenge
+    private static int getAttemptCount(Connection connection, int participantId, int challengeId) throws SQLException {
+        String query = "SELECT COUNT(*) AS attemptCount FROM attemptsCounts WHERE participantId = ? AND challengeId = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, participantId);
+            preparedStatement.setInt(2, challengeId);
+    
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("attemptCount");
+                } else {
+                    return 0; // No attempts found
+                }
+            }
+        }
     }
     
+    // Get the username by participantId to help in saving the pdf
+    private static String getUsernameByParticipantId(Connection connection, int participantId) {
+        String query = "SELECT username FROM participants WHERE participantId = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, participantId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
     
+    //for sending the marking guide to the participant upon completion of a challenge
     private static void sendMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, Map<Integer, Integer> questionMarks, String email) {
         int totalMarks = 0;
         for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
@@ -587,8 +806,7 @@ public class Server {
         }
     }
     
-    
-
+    // Get the marks awarded for each question
     private static Map<Integer, Integer> getQuestionMarks(Map<Integer, String> correctAnswers) {
         Map<Integer, Integer> questionMarks = new HashMap<>();
         String query = "SELECT questionId, marks FROM answers WHERE questionId = ? AND answer = ?";
@@ -614,7 +832,7 @@ public class Server {
         return questionMarks;
     }
     
-
+    // Create PDF marking guide
     private static void createPdfMarkingGuide(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage();
@@ -656,7 +874,7 @@ public class Server {
             document.save("marking_guide.pdf");
         }
     }
-
+    //for sending the email attached with the marking guide
     private static void sendEmailWithAttachment(String to, String subject, String body, String filePath) throws UnsupportedEncodingException {
         String from = "tgnsystemslimited@gmail.com";
         String host = "smtp.gmail.com";
@@ -664,14 +882,14 @@ public class Server {
 
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true"); // For Gmail
+        properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.host", host);
-        properties.put("mail.smtp.port", "587"); // Port for TLS/STARTTLS
+        properties.put("mail.smtp.port", "587"); 
     
 
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, "mpdl ahwd lrkg xuqr"); // Replace with your email password
+                return new PasswordAuthentication(from, "mpdl ahwd lrkg xuqr");
             }
         });
 
@@ -700,6 +918,7 @@ public class Server {
             e.printStackTrace();
         }
     }
+        //for getting random questions
     public static List<Questions> getRandomQuestions(int numberOfQuestions) {
         List<Questions> questions = new ArrayList<>();
         String query = "SELECT questionid, questionText FROM questions ORDER BY RAND() LIMIT ?";
@@ -721,6 +940,7 @@ public class Server {
         return questions;
     }
 
+    //for getting correct answers
     public static Map<Integer, String> getCorrectAnswers(List<Questions> questions) {
         Map<Integer, String> answers = new HashMap<>();
         String query = "SELECT questionId, answer FROM answers WHERE questionId IN (";
@@ -753,55 +973,7 @@ public class Server {
         return answers;
     }
 
-    public static void generatePDFReport(Map<Questions, String> userAnswers, Map<Integer, String> correctAnswers, int totalMarks, int totalQuestions) {
-        PDDocument document = new PDDocument();
-        PDPage page = new PDPage();
-        document.addPage(page);
-
-        try {
-            PDType0Font customFont = PDType0Font.load(document, new File("C:/xampp/htdocs/National-E-Mathematics-Competition/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf"));
-            System.out.println("Font loaded successfully.");
-
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                contentStream.beginText();
-                contentStream.setFont(customFont, 16);
-                contentStream.setLeading(14.5f);
-                contentStream.newLineAtOffset(25, 725);
-                contentStream.showText("Math Challenge Marking Guide");
-                contentStream.newLine();
-                contentStream.setFont(customFont, 12);
-                contentStream.newLine();
-
-                for (Map.Entry<Questions, String> entry : userAnswers.entrySet()) {
-                    Questions question = entry.getKey();
-                    String userAnswer = entry.getValue();
-                    String correctAnswer = correctAnswers.get(question.getQuestionId());
-
-                    contentStream.showText("Question: " + question.getQuestionText());
-                    contentStream.newLine();
-                    contentStream.showText("Your Answer: " + userAnswer);
-                    contentStream.newLine();
-                    contentStream.showText("Correct Answer: " + correctAnswer);
-                    contentStream.newLine();
-                    contentStream.newLine();
-                }
-
-                contentStream.showText("Total Marks: " + totalMarks + " out of " + totalQuestions);
-                contentStream.endText();
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error writing to PDF: " + e.getMessage());
-            }
-
-            document.save("Marking_Guide.pdf");
-            document.close();
-            System.out.println("PDF generated successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error loading font or saving PDF: " + e.getMessage());
-        }
-    }
-
+    //for viewing applicants
     private static void handleViewApplicants(PrintWriter out) {
         try {
             File file = new File("registration_details.txt");
@@ -830,6 +1002,7 @@ public class Server {
         }
     }
     
+    //for sending email upon registering
     private static void sendEmail(String recipientEmail, String username, String firstname, String lastname, String dob) throws UnsupportedEncodingException{
         // Sender's email ID and name
         String fromEmail = "tgnsystemslimited@gmail.com";
@@ -837,7 +1010,6 @@ public class Server {
         final String usernameEmail = "tgnsystemslimited@gmail.com"; // sender's email ID
         final String password = "mpdl ahwd lrkg xuqr"; // sender's password
     
-        // Assuming you are sending email through smtp.gmail.com
         String host = "smtp.gmail.com";
     
         Properties props = new Properties();
@@ -889,7 +1061,8 @@ public class Server {
         }
     }
     
-    private static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
+    //for confirming applicants
+    public static void handleConfirmApplicant(PrintWriter out, BufferedReader in, Connection connection) {
         try {
             out.println("\nPlease enter your choice (confirm yes <username> or confirm no <username>):");
             out.flush(); // Ensure the prompt is sent immediately
@@ -909,71 +1082,65 @@ public class Server {
                 out.flush();
                 return;
             }
-    
+
+            // Extract action and username
             String action = parts[1];
             String username = parts[2];
     
             File inputFile = new File("registration_details.txt");
-            File tempFile = new File("registration_details_temp.txt");
+            List<String> fileContents = new ArrayList<>();
+            String applicantDetails = null;
     
-            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-    
+            // Read the file contents into a list
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
                 String currentLine;
-                boolean userFound = false;
-                String applicantDetails = null;
-    
-                // Read each line from the input file
                 while ((currentLine = reader.readLine()) != null) {
                     if (currentLine.contains(username)) {
                         applicantDetails = currentLine;
-                        userFound = true;
-                        // Skip writing the found line to the temp file (effectively removing it)
                         continue;
                     }
-                    // Write all lines except the found applicant's details to the temp file
-                    writer.write(currentLine + System.lineSeparator());
-                }
-    
-                if (!userFound) {
-                    out.println("Applicant not found.");
-                    out.flush();
-                    return;
-                }
-    
-                // Extract email address from applicantDetails
-                String emailAddress = applicantDetails.split(",")[3]; // Assuming emailAddress is in the 4th position
-    
-                // Insert the applicant details into the database
-                if (applicantDetails != null) {
-                    if (action.equals("yes")) {
-                        insertIntoDatabase(connection, "participants", applicantDetails);
-                        out.println("Applicant confirmed and added to participants.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations!" +username+ ", \nYour application has been accepted.");
-                    } else if (action.equals("no")) {
-                        insertIntoDatabase(connection, "rejected", applicantDetails);
-                        out.println("Applicant rejected and added to rejected.");
-                        sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " +username+ ", \nWe regret to inform you that your application has been rejected.");
-                    }
-                    out.flush();
-                }
-    
-                // Replace the original file with the updated temp file
-                if (!inputFile.delete()) {
-                    out.println("Failed to delete the original file.");
-                    out.flush();
-                    return;
-                }
-                if (!tempFile.renameTo(inputFile)) {
-                    out.println("Failed to rename the temp file.");
-                    out.flush();
-                    return;
+                    fileContents.add(currentLine);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                out.println("Failed to process the applicant. Please try again.");
+                out.println("Failed to read the file. Please try again.");
+                out.flush();
+                return;
+            }
+    
+            if (applicantDetails == null) {
+                out.println("Applicant not found.");
+                out.flush();
+                return;
+            }
+    
+            // Extract email address from applicantDetails
+            String emailAddress = applicantDetails.split(",")[3]; // emailAddress is in the 4th position
+    
+            // Insert the applicant details into the  respective table in the database
+            if (action.equals("yes")) {
+                insertIntoDatabase(connection, "participants", applicantDetails);
+                out.println("Applicant confirmed and added to participants.");
+                sendEmailConfirmation(emailAddress, "Application Status: Accepted", "Congratulations " + username + ",\nYour application has been accepted.");
+            } else if (action.equals("no")) {
+                insertIntoDatabase(connection, "rejected", applicantDetails);
+                out.println("Applicant rejected and added to rejected.");
+                sendEmailConfirmation(emailAddress, "Application Status: Rejected", "Hello " + username + ",\nWe regret to inform you that your application has been rejected.");
+            }
+            out.flush();
+    
+            // Write the modified list back to the original file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile))) {
+                for (String line : fileContents) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                out.println("Failed to update the file. Please try again.");
                 out.flush();
             }
+    
         } catch (Exception e) {
             e.printStackTrace();
             out.println("An error occurred while confirming the applicant.");
@@ -981,17 +1148,18 @@ public class Server {
         }
     }
     
+    //for sending email upon being confimedyes or no
     private static void sendEmailConfirmation(String toAddress, String subject, String body)throws UnsupportedEncodingException {
-        final String fromAddress = "tgnsystemslimited@gmail.com"; // Replace with your email
+        final String fromAddress = "tgnsystemslimited@gmail.com";
         String senderName = "National-E-Mathematics-Competition";
-        final String username = "tgnsystemslimited@gmail.com"; // Replace with your email username
-        final String password = "mpdl ahwd lrkg xuqr"; // Replace with your email password
+        final String username = "tgnsystemslimited@gmail.com";
+        final String password = "mpdl ahwd lrkg xuqr";
     
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.host", "smtp.gmail.com"); // Replace with your SMTP server
-        properties.put("mail.smtp.port", "587"); // Replace with your SMTP port
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587"); 
     
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override
@@ -1024,7 +1192,7 @@ public class Server {
             System.out.println("Detail " + i + ": " + details[i]);
         }
         
-        // Ensure that there are exactly 8 details (excluding the username)
+        // Ensure that there are exactly 8 details (excluding the Register)
         if (details.length < 8) {
             System.out.println("Insufficient details provided.");
             return;
@@ -1033,7 +1201,7 @@ public class Server {
         String query = "INSERT INTO " + tableName + " (username, firstname, lastname, email, password, dateOfBirth, schoolRegno, imageFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, details[0]); // Adjust index based on your format
+            pstmt.setString(1, details[0]);
             pstmt.setString(2, details[1]);
             pstmt.setString(3, details[2]);
             pstmt.setString(4, details[3]);
@@ -1048,13 +1216,12 @@ public class Server {
         }
     }
 
-    
-    
+    //view challenges
     private static void viewChallenges(PrintWriter out, BufferedReader in, Connection connection) throws IOException {
         try {
             
 
-            // Create a statement to execute the SQL query
+            // statement to execute the SQL query
             Statement statement = connection.createStatement();
 
             // Execute the SQL query to fetch the challenges with current date between startDate and endDate
