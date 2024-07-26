@@ -44,8 +44,10 @@ public class Abc {
     private static final String VIEW_CHALLENGES = "ViewChallenges";
     private static final String ATTEMPT_CHALLENGE = "AttemptChallenge";
     private static final String VIEW_APPLICANTS = "ViewApplicants"; // New command
+    private static final String LOGOUT = "Logout";
     private static final String IMAGE_FOLDER = "saved_images/";
     private static final String CONFIRM_APPLICANT = "ConfirmApplicant";
+    private static final String BACK = "Back";
     private static final String EXIT = "Exit"; // Exit command
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mathchallenge";
     private static final String USER = "root";
@@ -77,14 +79,18 @@ public class Abc {
     private static void handleClientSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayInitialMenu(out);
-
+    
+            // read input from client
             String userCategory = in.readLine();
             System.out.println("User category selected: " + userCategory);
-
+    
             if ("participant".equalsIgnoreCase(userCategory)) {
                 handleParticipantSession(in, out, connection);
             } else if ("schoolrepresentative".equalsIgnoreCase(userCategory)) {
                 handleRepresentativeSession(in, out, connection);
+            } else if (EXIT.equalsIgnoreCase(userCategory)) {
+                System.out.println("Exiting the server...");
+                break; // Exit the server
             } else {
                 out.println("Invalid user category selected.");
             }
@@ -94,14 +100,15 @@ public class Abc {
     private static void handleParticipantSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayParticipantMenu(out);
-
+    
+            // read input from client
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
-
+    
             if (EXIT.equalsIgnoreCase(clientChoice)) {
                 break; // Return to the initial menu
             }
-
+    
             switch (clientChoice) {
                 case REGISTER:
                     handleRegistration(in, out, connection);
@@ -118,14 +125,14 @@ public class Abc {
     private static void handleRepresentativeSession(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
         while (true) {
             displayRepresentativeMenu(out);
-
+    
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
-
-            if (EXIT.equalsIgnoreCase(clientChoice)) {
+    
+            if (BACK.equalsIgnoreCase(clientChoice)) {
                 break; // Return to the initial menu
             }
-
+    
             switch (clientChoice) {
                 case REPLOGIN:
                     handleRepLogin(in, out, connection);
@@ -135,45 +142,50 @@ public class Abc {
             }
         }
     }
+
     private static void displayInitialMenu(PrintWriter out) {
         out.println("\nWhich user category are you?\n");
         out.println("participant");
-        out.println("schoolrepresentative\n");
+        out.println("schoolrepresentative");
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:\n");
     }
 
     private static void displayParticipantMenu(PrintWriter out) {
         out.println("Participant Menu:\n");
-        out.println( REGISTER );
-        out.println( LOGIN );
-        out.println( EXIT );
+        out.println(REGISTER);
+        out.println(LOGIN);
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
     private static void displayParticipantLoggedInMenu(PrintWriter out) {
         out.println("Participant Menu (Logged In):\n");
-        out.println( VIEW_CHALLENGES );
-        out.println( ATTEMPT_CHALLENGE );
-        out.println( EXIT );
+        out.println(VIEW_CHALLENGES);
+        out.println(ATTEMPT_CHALLENGE);
+        out.println(LOGOUT); // Add LOGOUT option
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
     private static void displayRepresentativeMenu(PrintWriter out) {
         out.println("School Representative's Menu:\n");
-        out.println( REPLOGIN);
-        out.println( EXIT );
+        out.println(REPLOGIN);
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:\n\n");
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
         out.println("School Representative Menu (Logged In):\n");
-        out.println( VIEW_APPLICANTS );
-        out.println( CONFIRM_APPLICANT );
-        out.println( EXIT );
+        out.println(VIEW_APPLICANTS);
+        out.println(CONFIRM_APPLICANT);
+        out.println(LOGOUT); // Add BACK option
+        out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
     }
 
     private static void handleLogin(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
+       
         out.println("Enter your username:");
         String username = in.readLine();
         out.println("Enter your password:");
@@ -204,6 +216,9 @@ public class Abc {
                         out.flush();
                     }
                     break;
+                case LOGOUT:
+                out.println("Logging out...");
+                return; // Return to the participant menu
                 case EXIT:
                     // Do nothing, will return to the initial menu
                     break;
@@ -291,6 +306,7 @@ public class Abc {
             switch (clientChoice) {
                 case VIEW_APPLICANTS:
                     handleViewApplicants(out);
+                    displayParticipantLoggedInMenu(out);
                     break;
                 case CONFIRM_APPLICANT:
                     handleConfirmApplicant(out, in, connection);
@@ -303,6 +319,7 @@ public class Abc {
             }
         } else {
             out.println("Login failed. Invalid username or password.");
+            handleRepLogin(in, out, connection);
         }
     }
 
