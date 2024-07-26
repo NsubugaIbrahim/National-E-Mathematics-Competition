@@ -165,28 +165,38 @@ public class Server {
     }
 
     private static void displayParticipantLoggedInMenu(PrintWriter out) {
+    
+            
         out.println("Participant Menu (Logged In):\n");
         out.println(VIEW_CHALLENGES);
         out.println(ATTEMPT_CHALLENGE);
         out.println(LOGOUT); // Add LOGOUT option
         out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
+    
+        
     }
 
     private static void displayRepresentativeMenu(PrintWriter out) {
+
+            
         out.println("School Representative's Menu:\n");
         out.println(REPLOGIN);
         out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:\n\n");
+        
     }
 
     private static void displayRepLoggedInMenu(PrintWriter out) {
+        
+            
         out.println("School Representative Menu (Logged In):\n");
         out.println(VIEW_APPLICANTS);
         out.println(CONFIRM_APPLICANT);
         out.println(LOGOUT); // Add BACK option
         out.println(EXIT); // Add EXIT option
         out.println("Please enter your choice:");
+        
     }
 
     private static void handleLogin(BufferedReader in, PrintWriter out, Connection connection) throws IOException {
@@ -201,33 +211,38 @@ public class Server {
             loggedInEmail = getEmailByUsername(username, connection); // Store the email of the logged-in participant
             out.println("Login successful!");
             displayParticipantLoggedInMenu(out);
-
+            while (true) {
+                
+            
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
 
             int participantId = getParticipantId(username, connection); // Declare and initialize participantId
 
-            switch (clientChoice) {
-                case VIEW_CHALLENGES:
-                    viewChallenges(out, in, connection);
-                    break;
-                    case ATTEMPT_CHALLENGE:
-                    try {
-                        handleChallenge(in, out, connection, participantId, loggedInEmail);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        out.println("An error occurred while handling the challenge: " + e.getMessage());
-                        out.flush();
-                    }
-                    break;
-                    case LOGOUT:
-                        out.println("Logging out...");
-                        return; // Return to the participant menu
-                    case EXIT:
-                        // Do nothing, will return to the initial menu
+                switch (clientChoice) {
+                    case VIEW_CHALLENGES:
+                        viewChallenges(out, in, connection);
                         break;
-                    default:
-                        out.println("Invalid option selected.");
+                        case ATTEMPT_CHALLENGE:
+                        try {
+                            handleChallenge(in, out, connection, participantId, loggedInEmail);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            out.println("An error occurred while handling the challenge: " + e.getMessage());
+                            out.flush();
+                        }
+                        break;
+                        case LOGOUT:
+                            out.println("Logging out...");
+                            return; // Return to the participant menu
+                        case EXIT:
+                            // Do nothing, will return to the initial menu
+                            break;
+                        default:
+                            out.println("Invalid option selected.");
+                }
+                displayParticipantLoggedInMenu(out);
+
             }
         } else {
             out.println("Login failed. Invalid username or password.");
@@ -303,13 +318,16 @@ public class Server {
             
             out.println("Login successful!");
             displayRepLoggedInMenu(out);
-
+            while (true) {
+                
+            
             String clientChoice = in.readLine();
             System.out.println("Client selected option: " + clientChoice);
     
             switch (clientChoice) {
                 case VIEW_APPLICANTS:
                     handleViewApplicants(out);
+                   
                     break;
                 case CONFIRM_APPLICANT:
                     handleConfirmApplicant(out, in, connection);
@@ -320,6 +338,9 @@ public class Server {
                 default:
                     out.println("Invalid option selected.");
             }
+            displayRepLoggedInMenu(out);
+        }
+            
         } else {
             out.println("Login failed. Invalid username or password.");
         }
@@ -476,9 +497,14 @@ public class Server {
 
     //handles the challenge
     public static void handleChallenge(BufferedReader in, PrintWriter out, Connection connection, int participantId, String loggedInEmail) throws IOException {
+       
+        
+       
         out.println("Enter the command to attempt a challenge: AttemptChallenge [challengeId]");
         out.flush();
-    
+        
+            
+        
         String command = in.readLine().trim();
         if (!command.startsWith("AttemptChallenge")) {
             out.println("Invalid command. Please use: AttemptChallenge [challengeId]");
@@ -654,7 +680,9 @@ public class Server {
         out.println("Your score: " + score);
         out.println("Completed: " + completed+"\n\n\n\n");
         out.flush();
-        displayParticipantLoggedInMenu(out);
+
+
+    
 
     }
 
