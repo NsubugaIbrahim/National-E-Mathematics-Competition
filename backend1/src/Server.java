@@ -650,6 +650,12 @@ public class Server {
         generateMarkingGuidePDF(username, userAnswers, correctAnswers, questionMarks, "C:/xampp/htdocs/National-E-Mathematics-Competition/backend1/src/pdf");
     
         //sendMarkingGuide(userAnswers, correctAnswers, questionMarks, loggedInEmail); // Pass the email and marks
+
+        out.println("Your score: " + score);
+        out.println("Completed: " + completed+"\n\n\n\n");
+        out.flush();
+        displayParticipantLoggedInMenu(out);
+
     }
 
     // Generate and save the marking guide PDF
@@ -1256,6 +1262,8 @@ public class Server {
                 out.println("Start Date: " + challenge.getStartDate());
                 out.println("End Date: " + challenge.getEndDate());
                 out.println();
+
+                displayParticipantLoggedInMenu(out);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1301,4 +1309,3 @@ public class Server {
         }
     }
 }
-
