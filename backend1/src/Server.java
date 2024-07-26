@@ -59,7 +59,7 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(6666);
         // connect to the database
              Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
-            System.out.println("\n\nWelcome to the Competition!\n");
+            System.out.println("\nserver side\n");
 
             while (true) {
                 // accept client connections
@@ -176,7 +176,7 @@ public class Server {
     private static void displayRepresentativeMenu(PrintWriter out) {
         out.println("School Representative's Menu:\n");
         out.println(REPLOGIN);
-        out.println(EXIT); // Add EXIT option
+        out.println(BACK); // Add EXIT option
         out.println("Please enter your choice:\n\n");
     }
 
