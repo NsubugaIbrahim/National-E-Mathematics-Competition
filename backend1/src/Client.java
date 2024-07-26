@@ -7,6 +7,7 @@ public class Client {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in))) {
+                
 
             String serverResponse;
             while ((serverResponse = in.readLine()) != null) {

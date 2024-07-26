@@ -59,7 +59,7 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(6666);
         // connect to the database
              Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
-            System.out.println("\n\nWelcome to the Competition!\n");
+            System.out.println("\nServer side\n");
 
             while (true) {
                 // accept client connections
