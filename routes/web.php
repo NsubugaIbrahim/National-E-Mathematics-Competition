@@ -6,6 +6,7 @@ use App\Http\Controllers\ChallengesviewController;
 use App\Http\Controllers\SchoolsController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\GraphsController;
+use App\Http\Controllers\BesttwoController;
 use App\Models\Challenge;
 use App\Models\School;
 use App\Models\Representative;
@@ -207,7 +208,7 @@ Route::post('/api/attempts', [App\Http\Controllers\AttemptController::class, 'st
 //Analytics
 Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'analytics'])->name('analytics');
 
-
-
 //Graphs
 Route::get('/home', [GraphsController::class, 'index'])->name('home');
+
+Route::get('/top-participants', [BesttwoController::class, 'getTopParticipants']);

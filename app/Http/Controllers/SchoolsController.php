@@ -22,9 +22,13 @@ class SchoolsController extends Controller
 
           // Loop through each row's data and insert into database
           for ($i = 0; $i < count($schoolRegNo); $i++) {
+<<<<<<< HEAD
 
             $pdo = new PDO('mysql:host=localhost;dbname=maths', 'root', '');
             $pdo = new PDO('mysql:host=localhost;dbname=mathchallenge', 'root', '');
+=======
+            $pdo = new PDO('mysql:host=localhost;dbname=laravel', 'root', '');
+>>>>>>> d782722cdcd6bdc74d533c37a99dc56d3a449881
             $sql = "INSERT INTO schools(schoolRegNo, schoolName, district) VALUES (?, ?, ?)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array($schoolRegNo[$i], $schoolName[$i], $district[$i]));

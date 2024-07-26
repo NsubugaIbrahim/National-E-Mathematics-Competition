@@ -18,8 +18,7 @@ return new class extends Migration
             $table->string("schoolRegNo");
             $table->string("password");
         });
-
-
+        
     }
 
     /**
